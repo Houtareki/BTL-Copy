@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản Trị Viên</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+
+    <h1>Bảng điều khiển</h1>
+
+    <div class="container">
+        <h2>Thêm QTV</h2>
+        <form id ="addAdminForm">
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Tên đăng nhập" required>
+            </div>
+            <div class="input-group">
+                <input type="email" id="email" placeholder="Email" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" placeholder="Mật khẩu" required>
+            </div>
+            <button type="submit" class="btn">Tạo Admin</button>
+            <div id="adminFormMessage" class="=message"></div>
+        </form>
+    </div>
+
+    <div class="container">
+        <h2>Danh sách Users</h2>
+        <button id="loadUsersBtn" class="btn">Tải lại danh sách User</button>
+        <table id="usersTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+
+    <script src="../js/admin.js"></script>
+</body>
+</html>

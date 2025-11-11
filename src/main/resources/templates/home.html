@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MovieWeb - Trang Chủ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+</head>
+
+<body>
+    <header>
+        <h1 id="logo">PTIT CINEMA</h1>
+        <nav>
+            <a href="#"><i class="fa-solid fa-house"></i> Home</a>
+
+            <a href="#" onclick="window.location.href=`watchlist?userId=${userId}`">
+                <i class="fa-solid fa-heart"></i> Watchlist
+            </a>
+
+            <div class="dropdown">
+                <a href="#genres"><i class="fa-solid fa-list"></i> Thể loại</a>
+                <div class="dropdown-content" id="genre-table"></div>
+            </div>
+
+            <div class="dropdown">
+                <a href="#countries"><i class="fa-solid fa-earth-americas"></i> Quốc gia</a>
+                <div class="dropdown-content" id="country-table"></div>
+            </div>
+
+            <a href="#" id="search-link"><i class="fa-solid fa-magnifying-glass"></i>Tìm kiếm</a>
+            <a href="#" id="account-link"><i class="fa-solid fa-user"></i> Tài khoản</a>
+        </nav>
+    </header>
+
+    <!-- Banner -->
+    <div class="banner" id="banner">
+        <div class="banner-track"></div>
+        <div class="banner-content">
+            <h2 id="banner-title">Tên Phim</h2>
+            <button id="banner-btn"><i class="fa-solid fa-play"></i> Xem Ngay</button>
+        </div>
+    </div>
+
+    <!-- Sections -->
+    <div class="section">
+        <h3>Phim đang chiếu</h3>
+        <div class="movie-slider">
+            <button class="arrow left" onclick="scrollRow('showing-movies', -1)">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <div class="movie-row" id="showing-movies"></div>
+            <button class="arrow right" onclick="scrollRow('showing-movies', 1)">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Phim đề xuất</h3>
+        <div class="movie-slider">
+            <button class="arrow left" onclick="scrollRow('recommended-movies', -1)">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <div class="movie-row" id="recommended-movies"></div>
+            <button class="arrow right" onclick="scrollRow('recommended-movies', 1)">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Thể loại</h3>
+        <div class="movie-slider">
+            <div class="movie-row" id="genres"></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Quốc gia</h3>
+        <div class="movie-slider">
+            <div class="movie-row" id="countries"></div>
+        </div>
+    </div>
+
+    <!-- Movie detail -->
+    <div id="movie-detail">
+        <span class="close-btn" onclick="closeMovieDetail()">×</span>
+        <div class="detail-top">
+            <img id="detail-img" src="" alt="">
+            <div class="info">
+                <h2 id="detail-title"></h2>
+                <p id="detail-desc"></p>
+                <p><strong>Năm phát hành:</strong> <span id="detail-year"></span></p>
+                <p><strong>Quốc gia:</strong> <span id="detail-country"></span></p>
+                <p><strong>Ngôn ngữ:</strong> <span id="detail-language"></span></p>
+                <p><strong>Trạng thái:</strong> <span id="detail-status"></span></p>
+                <a id="detail-trailer" href="#" target="_blank"><i class="fa-solid fa-video"></i> Xem Trailer</a>
+                <div class="interaction">
+                    <button id="like-btn" class="like-btn">
+                        <i class="fa-solid fa-thumbs-up"></i> Like (0)
+                    </button>
+                    <button id="save-btn" class="save-btn">
+                        <i class="fa-solid fa-bookmark"></i> Save (0)
+                    </button>
+                    <button id="view-btn" class="view-btn" disabled>
+                        <i class="fa-solid fa-eye"></i> View (0)
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Episodes -->
+        <div class="episodes">
+            <h3><i class="fa-solid fa-clapperboard"></i> Các tập phim</h3>
+            <div id="episode-list" class="episodes-grid"></div>
+        </div>
+
+        <!-- Comments -->
+        <div class="comments">
+            <h3><i class="fa-solid fa-comments"></i> Comment</h3>
+            <div id="comment-list"></div>
+            <div class="comment-form">
+                <textarea id="comment-input" placeholder="Viết bình luận..."></textarea>
+                <button onclick="submitComment()"><i class="fa-solid fa-paper-plane"></i> Gửi bình luận</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-column">
+                <h4>PTIT CINEMA</h4>
+                <p>Trải nghiệm xem phim trực tuyến với chất lượng HD, tốc độ nhanh và kho phim đa dạng nhất.</p>
+            </div>
+            <div class="footer-column">
+                <h4>Liên hệ</h4>
+                <p><i class="fa-solid fa-location-dot"></i> Hà Nội, Việt Nam</p>
+                <p><i class="fa-solid fa-phone"></i> 0123-456-789</p>
+                <p><i class="fa-solid fa-envelope"></i> support@ptitcinema.vn</p>
+            </div>
+            <div class="footer-column">
+                <h4>Liên kết nhanh</h4>
+                <a href="#home"><i class="fa-solid fa-angle-right"></i> Trang chủ</a>
+                <a href="#movies"><i class="fa-solid fa-angle-right"></i> Phim mới</a>
+                <a href="#genres"><i class="fa-solid fa-angle-right"></i> Thể loại</a>
+                <a href="#account"><i class="fa-solid fa-angle-right"></i> Tài khoản</a>
+            </div>
+            <div class="footer-column">
+                <h4>Kết nối</h4>
+                <div class="social-icons">
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i> Facebook</a>
+                    <a href="#"><i class="fa-brands fa-twitter"></i> Twitter</a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i> Instagram</a>
+                    <a href="#"><i class="fa-brands fa-youtube"></i> YouTube</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            © 2025 PTIT CINEMA. All rights reserved.
+        </div>
+    </footer>
+
+
+
+    <script src="../js/home.js"></script>
+</body>
+
+</html>

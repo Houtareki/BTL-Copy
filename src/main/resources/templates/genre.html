@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Phim Theo Thể Loại</title>
+  <link rel="stylesheet" href="../css/genre.css">
+</head>
+
+<body>
+  <header onclick="goHome()">🎬 PTIT CINEMA</header>
+
+  <h2 style="padding:20px" id="page-title">Danh sách phim</h2>
+
+  <div class="movies-container" id="movies"></div>
+
+  <div id="movie-detail">
+    <span class="close-btn" onclick="closeMovieDetail()">×</span>
+    <div class="detail-top">
+      <img id="detail-img" src="" alt="">
+      <div class="info">
+        <h2 id="detail-title"></h2>
+        <p id="detail-desc"></p>
+        <p><strong>Năm phát hành:</strong> <span id="detail-year"></span></p>
+        <p><strong>Quốc gia:</strong> <span id="detail-country"></span></p>
+        <p><strong>Ngôn ngữ:</strong> <span id="detail-language"></span></p>
+        <p><strong>Trạng thái:</strong> <span id="detail-status"></span></p>
+        <a id="detail-trailer" href="#" target="_blank"><i class="fa-solid fa-video"></i> Xem Trailer</a>
+        <div class="interaction">
+          <button id="like-btn" class="like-btn">
+            <i class="fa-solid fa-thumbs-up"></i> Like (0)
+          </button>
+          <button id="save-btn" class="save-btn">
+            <i class="fa-solid fa-bookmark"></i> Save (0)
+          </button>
+          <button id="view-btn" class="view-btn" disabled>
+            <i class="fa-solid fa-eye"></i> View (0)
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Episodes -->
+    <div class="episodes">
+      <h3><i class="fa-solid fa-clapperboard"></i> Các tập phim</h3>
+      <div id="episode-list" class="episodes-grid"></div>
+    </div>
+
+    <!-- Comments -->
+    <div class="comments">
+      <h3><i class="fa-solid fa-comments"></i> Comment</h3>
+      <div id="comment-list"></div>
+      <div class="comment-form">
+        <textarea id="comment-input" placeholder="Viết bình luận..."></textarea>
+        <button onclick="submitComment()"><i class="fa-solid fa-paper-plane"></i> Gửi bình luận</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="../js/genre.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,106 @@
+/* Reset cơ bản */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    color: #333;
+    padding: 20px;
+}
+
+h1, h2 {
+    color: #111;
+    margin-bottom: 15px;
+}
+
+.container {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Form */
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Bảng */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+table th, table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+table th {
+    background-color: #f9f9f9;
+}
+
+/* Nút */
+.btn {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 5px;
+}
+.btn:hover {
+    background-color: #0056b3;
+}
+
+.btn-lock {
+    background-color: #dc3545; /* Đỏ */
+}
+.btn-lock:hover {
+    background-color: #c82333;
+}
+
+.btn-unlock {
+    background-color: #28a745; /* Xanh lá */
+}
+.btn-unlock:hover {
+    background-color: #218838;
+}
+
+.btn-promote {
+    background-color: #ffc107; /* Vàng */
+    color: #333;
+}
+.btn-promote:hover {
+    background-color: #e0a800;
+}
+
+/* Tin nhắn */
+.message {
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: bold;
+}
+.message.success {
+    color: #28a745;
+}
+.message.error {
+    color: #dc3545;
+}
