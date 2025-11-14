@@ -184,13 +184,13 @@ public class UserServiceIMP implements UserService {
 
     @Override
     public Page<User> getAllUsers(int pageNo) {
-        Pageable pageable = PageRequest.of(pageNo, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "user_id"));
+        Pageable pageable = PageRequest.of(pageNo, PAGE_SIZE, Sort.by(Sort.Direction.ASC, "userId"));
         return userRepo.findAll(pageable);
     }
 
     @Override
     public Page<User> searchUsers(String keyword, int pageNo) {
-        Pageable pageable = PageRequest.of(pageNo, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "user_id"));
+        Pageable pageable = PageRequest.of(pageNo, PAGE_SIZE, Sort.by(Sort.Direction.ASC, "userId"));
         return userRepo.searchByUsernameOrEmail(keyword, pageable);
     }
 

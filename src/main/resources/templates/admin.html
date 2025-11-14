@@ -947,8 +947,7 @@
                 const pageObj = resp.data.data;
                 const list = pageObj.content || [];
                 let html = `<div class="text-sm text-gray-300 mb-2">Total: ${pageObj.totalElements ?? list.length}</div>`;
-                html += `<table><thead class="bg-gray-800"><tr><th class="p-2">ID</th><th class="p-2">Username</th><th class="p-2">Email</th><th class="p-2">State</th><th class="p-2">Role</th><th class="p-2">Actions</th></tr></thead><tbody>`;
-                list.forEach(u => {
+                html += `<table class="w-full text-left"><thead class="bg-gray-800"><tr><th class="p-2">ID</th><th class="p-2">Username</th><th class="p-2">Email</th><th class="p-2">State</th><th class="p-2">Role</th><th class="p-2">Actions</th></tr></thead><tbody>`;                list.forEach(u => {
                     html += `<tr class="border-t border-gray-700">
                     <td class="p-2">${u.userId}</td>
                     <td class="p-2">${escapeHtml(u.username)}</td>
