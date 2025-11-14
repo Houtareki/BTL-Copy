@@ -1,19 +1,18 @@
 package com.example.demo.Controller;
 
+import com.example.demo.Model.CommonModel.UserForm;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.Entity.User;
 import com.example.demo.Model.CommonModel.Role;
-import com.example.demo.Model.CommonModel.RegisterForm;
 import com.example.demo.Model.ResponseModel.CustomData;
 import com.example.demo.Model.ResponseModel.CustomResponse;
 import com.example.demo.Service.UserService;
-
-import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -28,96 +27,126 @@ public class AdminController {
         return "admin";
     }
 
-    // Danh sách user
+    private boolean isNotAdmin(int userId) {
+        try {
+            User user = userService.getUserById(userId);
+            return user == null || user.getRole() != Role.ADMIN;
+        }
+        catch (Exception e) {
+            return true;
+        }
+    }
+
     @GetMapping("/users")
     @ResponseBody
-    public ResponseEntity<?> getAllUsers(){
-        List<User> users = userService.getUsersByRole(Role.USER);
-        CustomData<List<User>> data = new CustomData<>(users);
-        CustomResponse<List<User>> response = new CustomResponse<>("Success", "Lấy danh sách user thành công", data);
-        return ResponseEntity.ok(response);
-    }
+    public ResponseEntity<?> getUsers(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "pageNo") int pageNo) {
 
-    // Danh sách admin
-    @GetMapping("/admins")
-    @ResponseBody
-    public ResponseEntity<?> getAllAdmins(){
-        List<User> admins = userService.getUsersByRole(Role.ADMIN);
-        CustomData<List<User>> data = new CustomData<>(admins);
-        CustomResponse<List<User>> response = new CustomResponse<>("Success", "Lấy danh sách admin thành công", data);
-        return ResponseEntity.ok(response);
-    }
-
-    // Thêm admin
-    @PostMapping("/newad")
-    @ResponseBody
-    public ResponseEntity<?> addNewUser(@RequestBody RegisterForm registerForm){
-        User newAdmin = userService.createAdmin(registerForm);
-
-        if (newAdmin == null){
-            return ResponseEntity.ok(
-                    new CustomResponse<>("Error", "Tạo admin thất bại. Username hoặc Email đã được sử dụng.", null)
-            );
+        if (isNotAdmin(userId)) {
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Bạn không có quyền truy cập", null));
         }
 
-        CustomData<User> data = new CustomData<>(newAdmin);
-        CustomResponse<User> response = new CustomResponse<>("Success", "Tạo admin mới thành công!", data);
-        return ResponseEntity.ok(response);
+        Page<User> usersPage = userService.getAllUsers(pageNo);
+        CustomData<Page<User>> data = new CustomData<>(usersPage);
+
+        return ResponseEntity.ok(new CustomResponse<>("Success", "Lấy danh sách user thành công", data));
     }
 
-    // Khóa user
-    @PutMapping("/users/lock/{id}")
+    @GetMapping("/search/users")
     @ResponseBody
-    public ResponseEntity<?> lockUser(@PathVariable("id") int id){
-        User user = userService.lockUserAccount(id);
+    public ResponseEntity<?> searchUsers(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "pageNo") int pageNo,
+            @RequestParam(name = "keyword") String keyword) {
 
-        if (user == null) {
+        if (isNotAdmin(userId)) {
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Bạn không có quyền truy cập", null));
+        }
+
+        Page<User> usersPage = userService.searchUsers(keyword, pageNo);
+        CustomData<Page<User>> data = new CustomData<>(usersPage);
+
+        return ResponseEntity.ok(new CustomResponse<>("Success", "Tìm kiếm user thành công", data));
+    }
+
+    @GetMapping("/user")
+    @ResponseBody
+    public ResponseEntity<?> getUserData(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "targetUserId") int targetUserId){
+
+        if (isNotAdmin(userId)){
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Bạn không có quyền truy cập", null));
+        }
+
+        User user = userService.getUserById(targetUserId);
+
+        if (user == null){
             return ResponseEntity.ok(new CustomResponse<>("Error", "Không tìm thấy user", null));
         }
 
-        CustomResponse<User> response = new CustomResponse<>("Success", "Khóa tài khoản thành công", null);
-        return ResponseEntity.ok(response);
+        CustomData<User> data = new CustomData<>(user);
+        return ResponseEntity.ok(new CustomResponse<>("Success", "Lấy thành công", data));
     }
 
-    // Mở khóa user
-    @PutMapping("/users/unlock/{id}")
+    @PostMapping("/add/user")
     @ResponseBody
-    public ResponseEntity<?> unlockUser(@PathVariable("id") int id){
-        User user = userService.unlockUserAccount(id);
+    public ResponseEntity<?> addUser(
+            @RequestParam(name = "userId") int userId,
+            @RequestBody UserForm userForm){
 
-        if (user == null) {
-            return ResponseEntity.ok(new CustomResponse<>("Error", "Không tìm thấy user", null));
+        if (isNotAdmin(userId)){
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Bạn không có quyền truy cập", null));
         }
 
-        CustomResponse<User> response = new CustomResponse<>("Success", "Mở khóa tài khoản thành công", null);
-        return ResponseEntity.ok(response);
+        User user = userService.createUser(userForm);
+
+        if (user == null){
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Tạo thất bại. Username hoặc email đã được sử dụng.", null));
+        }
+
+        return ResponseEntity.ok(new CustomResponse<>("Success", "Tạo user thành công", null));
     }
 
-    // Nâng cấp thành admin
-    @PutMapping("/users/promote/{id}")
+    // 7. API Cập nhật User
+    @PutMapping("/update/user")
     @ResponseBody
-    public ResponseEntity<?> promoteToAdmin(@PathVariable("id") int id){
-        User user = userService.changeUserRole(id, Role.ADMIN);
+    public ResponseEntity<?> updateUser(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "targetUserId") int targetUserId,
+            @RequestBody UserForm userForm){
 
-        if (user == null) {
-            return ResponseEntity.ok(new CustomResponse<>("Error", "Không tìm thấy user", null));
+        if (isNotAdmin(userId)){
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Bạn không có quyền truy cập", null));
         }
 
-        CustomResponse<User> response = new CustomResponse<>("Success", "Nâng cấp vai trò thành công", null);
-        return ResponseEntity.ok(response);
+        User user = userService.updateUser(targetUserId, userForm);
+
+        if (user == null){
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Cập nhật thất bại!", null));
+        }
+
+        return ResponseEntity.ok(new CustomResponse<>("Success", "Cập nhật thành công", null));
     }
 
-    // Giáng cấp thành user
-    @PutMapping("/users/demote/{id}")
+    // 8. API Xóa User
+    @DeleteMapping("/delete/user")
     @ResponseBody
-    public ResponseEntity<?> demoteToUser(@PathVariable("id") int id){
-        User user = userService.changeUserRole(id, Role.USER);
+    public ResponseEntity<?> deleteUser(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "targetUserId") int targetUserId){
 
-        if (user == null) {
-            return ResponseEntity.ok(new CustomResponse<>("Error", "Không tìm thấy user", null));
+        if (isNotAdmin(userId)){
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Bạn không có quyền truy cập", null));
         }
 
-        CustomResponse<User> response = new CustomResponse<>("Success", "Hạ cấp vai trò thành công", null);
-        return ResponseEntity.ok(response);
+        boolean isDeleted = userService.deleteUser(targetUserId);
+
+        if (!isDeleted){
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Xóa thất bại!", null));
+        }
+
+        return ResponseEntity.ok(new CustomResponse<>("Success", "Xóa thành công", null));
     }
 }
