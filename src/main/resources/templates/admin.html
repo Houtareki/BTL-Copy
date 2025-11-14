@@ -159,40 +159,38 @@
         });
 
         // ---------- Pagination renderer ----------
-        function renderPagination(pagingRootId, totalPages, currentPage, onPageClickFnName, keyword, payload = {}) {
+        function renderPagination(pagingRootId, totalPages, currentPage, onPageClickFnName, keyword) {
             if (totalPages <= 1) return '';
 
-            // Chuyển payload thành string và escape dấu nháy
-            const payloadStr = JSON.stringify(payload).replace(/'/g, "\\'").replace(/"/g, '&quot;');
-            const keywordEscaped = keyword.replace(/'/g, "\\'");
+            const keywordEscaped = (keyword || '').replace(/'/g, "\\'");
 
             let html = `<div class="mt-4 flex justify-center items-center gap-2">`;
 
             // First
-            html += `<button class="px-3 py-1 rounded bg-gray-700" ${currentPage === 0 ? 'disabled' : ''} 
-                onclick="${onPageClickFnName}(0, '${keywordEscaped}', ${payloadStr})">« First</button>`;
+            html += `<button class="px-3 py-1 rounded bg-gray-700 ${currentPage === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-600'}" ${currentPage === 0 ? 'disabled' : ''}
+        onclick="${onPageClickFnName}(${0}, '${keywordEscaped}')">« First</button>`;
 
             // Prev
-            html += `<button class="px-3 py-1 rounded bg-gray-700" ${currentPage === 0 ? 'disabled' : ''} 
-                onclick="${onPageClickFnName}(${Math.max(0, currentPage - 1)}, '${keywordEscaped}', ${payloadStr})">Prev</button>`;
+            html += `<button class="px-3 py-1 rounded bg-gray-700 ${currentPage === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-600'}" ${currentPage === 0 ? 'disabled' : ''}
+        onclick="${onPageClickFnName}(${Math.max(0, currentPage - 1)}, '${keywordEscaped}')">Prev</button>`;
 
             // Pages window
             const start = Math.max(0, currentPage - 3);
             const end = Math.min(totalPages - 1, currentPage + 3);
             for (let i = start; i <= end; i++) {
-                html += `<button class="px-3 py-1 rounded ${i === currentPage ? 'bg-rose-500' : 'bg-gray-700'}" 
-                    onclick="${onPageClickFnName}(${i}, '${keywordEscaped}', ${payloadStr})">
-                    ${i + 1}
-                 </button>`;
+                html += `<button class="px-3 py-1 rounded ${i === currentPage ? 'bg-rose-500' : 'bg-gray-700 hover:bg-gray-600'}"
+            onclick="${onPageClickFnName}(${i}, '${keywordEscaped}')">
+            ${i + 1}
+         </button>`;
             }
 
             // Next
-            html += `<button class="px-3 py-1 rounded bg-gray-700" ${currentPage === totalPages - 1 ? 'disabled' : ''} 
-                onclick="${onPageClickFnName}(${Math.min(totalPages - 1, currentPage + 1)}, '${keywordEscaped}', ${payloadStr})">Next</button>`;
+            html += `<button class="px-3 py-1 rounded bg-gray-700 ${currentPage === totalPages - 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-600'}" ${currentPage === totalPages - 1 ? 'disabled' : ''}
+        onclick="${onPageClickFnName}(${Math.min(totalPages - 1, currentPage + 1)}, '${keywordEscaped}')">Next</button>`;
 
             // Last
-            html += `<button class="px-3 py-1 rounded bg-gray-700" 
-                onclick="${onPageClickFnName}(${totalPages - 1}, '${keywordEscaped}', ${payloadStr})">Last »</button>`;
+            html += `<button class="px-3 py-1 rounded bg-gray-700 ${currentPage === totalPages - 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-600'}" ${currentPage === totalPages - 1 ? 'disabled' : ''}
+        onclick="${onPageClickFnName}(${totalPages - 1}, '${keywordEscaped}')">Last »</button>`;
 
             html += `</div>`;
 
@@ -200,28 +198,21 @@
         }
 
 
-        function performSearch(tab, keyword, payload = '') {
-            let loader;
-            if (tab === 'movies') {
-                loader = loadMovies(keyword, payload);
-            }
-            else {
-                loader = {
-                    movies: loadMovies,
-                    genres: loadGenres,
-                    actors: loadActors,
-                    directors: loadDirectors,
-                    episodes: loadEpisodes,
-                    users: loadUsers,
-                    comments: loadComments
-                }[tab](0, keyword);
-            }
+        function performSearch(tab, keyword) {
+            const loaderFunction = {
+                movies: loadMovies,
+                genres: loadGenres,
+                actors: loadActors,
+                directors: loadDirectors,
+                episodes: loadEpisodes,
+                users: loadUsers,
+                comments: loadComments
+            }[tab];
 
-            loader && loader();
-            return;
+            if (loaderFunction) {
+                loaderFunction(0, keyword);
+            }
         }
-
-
 
         // ---------- MAIN: load page dispatcher ----------
         async function loadPage(tab) {
@@ -264,11 +255,11 @@
             let searchTimer; // biến toàn cục hoặc để trong file script chính
 
             searchInput.addEventListener('input', (e) => {
-                clearTimeout(searchTimer); // xóa timer cũ nếu user đang gõ tiếp
+                clearTimeout(searchTimer);
                 const keyword = e.target.value.trim();
 
-                // chỉ gọi API nếu người dùng dừng gõ 500ms
                 searchTimer = setTimeout(() => {
+
                     performSearch(currentTab, keyword);
                 }, 500);
             });
@@ -318,77 +309,63 @@
 
 
         // ---------- MOVIES: load / create / edit / delete ----------
-        async function loadMovies(page = 0, keyword = '', payload = '') {
-
-
+        async function loadMovies(page = 0, keyword = '') {
             tabState.movies.page = page;
-            tabState.movies.keyword = keyword
-            // call paged API
-            try {
-                let api = `/movies?userId=${userId}&pageNo=${page}&`;
-                let resp;
-                if (keyword && keyword.trim().length > 0) {
-                    // Khi có keyword → gọi API search
-                    const payload = {
-                        title: keyword,      // tên phim
-                    };
+            tabState.movies.keyword = keyword;
 
-                    resp = await fetchApi(`/search${api}keyword=${keyword}`, 'POST', payload);
+            try {
+                let resp;
+
+                if (keyword && keyword.trim().length > 0) {
+                    const searchApi = `/search/movies?userId=${userId}&pageNo=${page}&keyword=${keyword}`;
+                    resp = await fetchApi(searchApi, 'GET');
                 } else {
-                    // Không có keyword → lấy danh sách bình thường
+                    const api = `/movies?userId=${userId}&pageNo=${page}`;
                     resp = await fetchApi(api, 'GET');
                 }
+
                 if (resp.status === 'Success') {
                     const pageObj = resp.data.data;
                     const list = pageObj.content || [];
 
-
-                    // build table
                     let html = `<div class="flex justify-between items-center mb-3">
-                                  <div class="text-sm text-gray-300">Total: ${pageObj.totalElements ?? list.length}</div>
-                                </div>`;
+                  <div class="text-sm text-gray-300">Total: ${pageObj.totalElements ?? list.length}</div>
+                </div>`;
                     html += `<table class="min-w-full"><thead class="bg-gray-800"><tr>
-                         <th class="p-2">ID</th><th class="p-2">Title</th><th class="p-2">Year</th>
-                         <th class="p-2">Status</th><th class="p-2">Country</th><th class="p-2">Lang</th>
-                         <th class="p-2">Actions</th></tr></thead><tbody>`;
+                 <th class="p-2">ID</th><th class="p-2">Title</th><th class="p-2">Year</th>
+                 <th class="p-2">Status</th><th class="p-2">Country</th><th class="p-2">Lang</th>
+                 <th class="p-2">Actions</th></tr></thead><tbody>`;
 
                     list.forEach(m => {
                         html += `<tr class="border-t border-gray-700">
-                                <td class="p-2">${m.movieId}</td>
-                                <td class="p-2">
-                                    <div class="truncate max-w-[220px]">
-                                        ${escapeHtml(m.title)}
-                                    </div>
-                                </td>
-                            
-                                <td class="p-2">${m.releaseYear ?? ''}</td>
-                                <td class="p-2">${m.movieStatus ?? ''}</td>
-                                <td class="p-2">${m.country ?? ''}</td>
-                                <td class="p-2">${m.language ?? ''}</td>
-                                <td class="p-2">
-                                  <div class="flex space-x-2">
-                                    <button class="px-2 py-1 bg-green-600 rounded hover:bg-green-700" onclick="showMovieEdit(${m.movieId})">Edit</button>
-                                    <button class="px-2 py-1 bg-red-600 rounded hover:bg-red-700" onclick="deleteMovie(${m.movieId})">Delete</button>
-                                    <button class="px-2 py-1 bg-blue-600 rounded hover:bg-blue-700" onclick="openMovieDetailModal(${m.movieId})">Modify Infor</button>
-                                  </div>
-                                </td>
-                                </tr>`;
+                    <td class="p-2">${m.movieId}</td>
+                    <td class="p-2">
+                        <div class="truncate max-w-[220px]">
+                            ${escapeHtml(m.title)}
+                        </div>
+                    </td>
+                    <td class="p-2">${m.releaseYear ?? ''}</td>
+                    <td class="p-2">${m.movieStatus ?? ''}</td>
+                    <td class="p-2">${m.country ?? ''}</td>
+                    <td class="p-2">${m.language ?? ''}</td>
+                    <td class="p-2">
+                      <div class="flex space-x-2">
+                        <button class="px-2 py-1 bg-green-600 rounded hover:bg-green-700" onclick="showMovieEdit(${m.movieId})">Edit</button>
+                        <button class="px-2 py-1 bg-red-600 rounded hover:bg-red-700" onclick="deleteMovie(${m.movieId})">Delete</button>
+                        <button class="px-2 py-1 bg-blue-600 rounded hover:bg-blue-700" onclick="openMovieDetailModal(${m.movieId})">Modify Infor</button>
+                      </div>
+                    </td>
+                </tr>`;
                     });
                     html += `</tbody></table>`;
 
-                    html += renderPagination('movies', pageObj.totalPages, pageObj.number, 'loadMovies', keyword,
-                        (
-                            {
-                                title: keyword,      // tên phim
-                            }
-                        ));
+                    html += renderPagination('movies', pageObj.totalPages, pageObj.number, 'loadMovies', keyword);
                     contentArea.innerHTML = html;
-                }
-                else {
-                    contentArea.innerHTML = `<div class="text-red-400">Lỗi khi tải movies: ${resp.message}</div>`;    
+
+                } else {
+                    contentArea.innerHTML = `<div class="text-red-400">Lỗi khi tải movies: ${resp.message}</div>`;
                 }
 
-                
             } catch (err) {
                 contentArea.innerHTML = `<div class="text-red-400">Lỗi khi tải movies: ${err.message}</div>`;
             }

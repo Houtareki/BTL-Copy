@@ -20,4 +20,5 @@ public interface MovieGenreRepo extends JpaRepository<MovieGenre,MovieGenreId>{
     @Query(value = "select g.* from movie_genres mg left join genres g on mg.genre_id = g.genre_id where mg.movie_id = :movieId", nativeQuery = true)
     public List<Genre> findGenresByMovieId(@Param(value = "movieId") int movieId);
 
+    void deleteByMovieId(int movieId);
 }

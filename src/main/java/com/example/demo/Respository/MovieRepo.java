@@ -82,4 +82,5 @@ public interface MovieRepo extends JpaRepository<Movie, Integer>, JpaSpecificati
 	 */
 	@Query("SELECT m FROM Movie m ORDER BY m.views DESC")
 	Page<Movie> findTopViewedMovies(Pageable pageable);
+
 }

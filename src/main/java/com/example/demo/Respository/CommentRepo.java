@@ -24,4 +24,6 @@ public interface CommentRepo extends JpaRepository<Comment,Integer> {
     @Modifying
     @Query(value = "insert into comments (user_id, movie_id, content) values (:userId, :movieId, :content);", nativeQuery = true)
     public void addComment(@Param(value = "userId") int userId, @Param(value = "movieId") int movieId, @Param(value = "content") String content);
+
+    void deleteByMovieId(int movieId);
 }

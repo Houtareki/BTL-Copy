@@ -2,8 +2,14 @@ package com.example.demo.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import com.example.demo.Respository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Entity.Comment;
@@ -14,14 +20,6 @@ import com.example.demo.Entity.User;
 import com.example.demo.Model.CommonModel.CommentForm;
 import com.example.demo.Model.ResponseModel.CommentData;
 import com.example.demo.Model.ResponseModel.MovieInteractionData;
-import com.example.demo.Respository.CommentRepo;
-import com.example.demo.Respository.EpisodeRepo;
-import com.example.demo.Respository.FavoriteRepo;
-import com.example.demo.Respository.GenreRepo;
-import com.example.demo.Respository.MovieRepo;
-import com.example.demo.Respository.SaveRepo;
-import com.example.demo.Respository.UserRepo;
-import com.example.demo.Respository.WatchHistoryRepo;
 
 @Service
 public class MovieServiceIMP implements MovieService {
@@ -50,8 +48,16 @@ public class MovieServiceIMP implements MovieService {
 
 	@Autowired
 	private WatchHistoryRepo watchHistoryRepo;
+    @Autowired
+    private MovieActorRepo movieActorRepo;
+    @Autowired
+    private MovieDirectorRepo movieDirectorRepo;
+    @Autowired
+    private MovieGenreRepo movieGenreRepo;
+    @Autowired
+    private EpisodeRepo episodeRepo;
 
-	public List<Movie> getBannerMovies() {
+    public List<Movie> getBannerMovies() {
 		List<Movie> bannerMovies = movieRepo.getBannerMovies();
 		return bannerMovies;
 	}
@@ -231,6 +237,65 @@ public class MovieServiceIMP implements MovieService {
             return movies;
         }
         return null;
+    }
+
+    //---------------------------------------------------------------------
+    private static final int PAGE_SIZE = 10;
+
+    @Override
+    public Page<Movie> getAllMovies(int pageNo) {
+        Pageable pageable = PageRequest.of(pageNo, PAGE_SIZE, Sort.by(Sort.Direction.ASC, "movieId"));
+        return movieRepo.findAll(pageable);
+    }
+
+    @Override
+    public Page<Movie> searchMoviesByTitle(String title, int pageNo) {
+        Pageable pageable = PageRequest.of(pageNo, PAGE_SIZE, Sort.by(Sort.Direction.ASC, "movieId"));
+        return movieRepo.findByTitleContainingIgnoreCase(title, pageable);
+    }
+
+    @Override
+    public Movie getMovieById(int movieId) {
+        return movieRepo.findById(movieId).orElse(null);
+    }
+
+    @Override
+    public Movie saveMovie(Movie movie) {
+        return movieRepo.save(movie);
+    }
+
+    @Override
+    public Movie updateMovie(int movieId, Movie movieDetails) {
+        Optional<Movie> movie = movieRepo.findById(movieId);
+        if (movie.isEmpty()) {
+            return null;
+        }
+
+        Movie existingMovie = movie.get();
+
+        existingMovie.setTitle(movieDetails.getTitle());
+        existingMovie.setDescription(movieDetails.getDescription());
+        existingMovie.setReleaseYear(movieDetails.getReleaseYear());
+        existingMovie.setPosterUrl(movieDetails.getPosterUrl());
+        existingMovie.setThumbUrl(movieDetails.getThumbUrl());
+        existingMovie.setTrailerUrl(movieDetails.getTrailerUrl());
+        existingMovie.setCountry(movieDetails.getCountry());
+        existingMovie.setLanguage(movieDetails.getLanguage());
+        existingMovie.setMovieStatus(movieDetails.getMovieStatus());
+        existingMovie.setViews(movieDetails.getViews());
+
+        return movieRepo.save(existingMovie);
+    }
+
+    @Override
+    public void deleteMovie(int movieId) {
+        movieActorRepo.deleteByMovieId(movieId);
+        movieDirectorRepo.deleteByMovieId(movieId);
+        movieGenreRepo.deleteByMovieId(movieId);
+        episodeRepo.unlinkEpisodesFromMovie(movieId);
+        commentRepo.deleteByMovieId(movieId);
+
+        movieRepo.deleteById(movieId);
     }
 
 }

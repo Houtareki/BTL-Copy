@@ -37,6 +37,12 @@ public class AdminController {
         }
     }
 
+    private ResponseEntity<?> unauthorized() {
+        return ResponseEntity.ok(
+                new CustomResponse<>("Error", "Bạn không có quyền truy cập!", null)
+        );
+    }
+
     @GetMapping("/users")
     @ResponseBody
     public ResponseEntity<?> getUsers(
@@ -44,7 +50,7 @@ public class AdminController {
             @RequestParam(name = "pageNo") int pageNo) {
 
         if (isNotAdmin(userId)) {
-            return ResponseEntity.ok(new CustomResponse<>("Error", "Bạn không có quyền truy cập", null));
+            return unauthorized();
         }
 
         Page<User> usersPage = userService.getAllUsers(pageNo);
@@ -61,7 +67,7 @@ public class AdminController {
             @RequestParam(name = "keyword") String keyword) {
 
         if (isNotAdmin(userId)) {
-            return ResponseEntity.ok(new CustomResponse<>("Error", "Bạn không có quyền truy cập", null));
+            return unauthorized();
         }
 
         Page<User> usersPage = userService.searchUsers(keyword, pageNo);
@@ -77,7 +83,7 @@ public class AdminController {
             @RequestParam(name = "targetUserId") int targetUserId){
 
         if (isNotAdmin(userId)){
-            return ResponseEntity.ok(new CustomResponse<>("Error", "Bạn không có quyền truy cập", null));
+            return unauthorized();
         }
 
         User user = userService.getUserById(targetUserId);
@@ -97,7 +103,7 @@ public class AdminController {
             @RequestBody UserForm userForm){
 
         if (isNotAdmin(userId)){
-            return ResponseEntity.ok(new CustomResponse<>("Error", "Bạn không có quyền truy cập", null));
+            return unauthorized();
         }
 
         User user = userService.createUser(userForm);
@@ -118,7 +124,7 @@ public class AdminController {
             @RequestBody UserForm userForm){
 
         if (isNotAdmin(userId)){
-            return ResponseEntity.ok(new CustomResponse<>("Error", "Bạn không có quyền truy cập", null));
+            return unauthorized();
         }
 
         User user = userService.updateUser(targetUserId, userForm);
@@ -138,7 +144,7 @@ public class AdminController {
             @RequestParam(name = "targetUserId") int targetUserId){
 
         if (isNotAdmin(userId)){
-            return ResponseEntity.ok(new CustomResponse<>("Error", "Bạn không có quyền truy cập", null));
+            return unauthorized();
         }
 
         boolean isDeleted = userService.deleteUser(targetUserId);
