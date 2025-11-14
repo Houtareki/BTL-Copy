@@ -1,5 +1,7 @@
 package com.example.demo.Service;
 
+import com.example.demo.Model.CommonModel.UserForm;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Entity.User;
@@ -24,4 +26,11 @@ public interface UserService {
     public User unlockUserAccount(int userId);
     public User changeUserRole(int userId, Role newRole);
     public User createAdmin(RegisterForm registerForm);
+
+    public User getUserById(int userId);
+    public Page<User> getAllUsers(int pageNo);
+    public Page<User> searchUsers(String keyword, int pageNo);
+    public User createUser(UserForm userForm);
+    public User updateUser(int userId, UserForm userForm);
+    public boolean deleteUser(int userId);
 }
