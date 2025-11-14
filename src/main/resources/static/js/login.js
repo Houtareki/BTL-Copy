@@ -36,8 +36,24 @@ form.addEventListener("submit", async function (e) {
             showMessage(result.message || "Đăng nhập thành công!", "success");
 
             const userId = result.data?.data?.userId; // lấy userId từ response
+            const userRole = result.data?.data?.role;
+            const username = result.data?.data?.username;
+
+            // lưu thông tin vào sesstion storage
+            sessionStorage.setItem('userId', userId);
+            sessionStorage.setItem('userRole', userRole);
+            sessionStorage.setItem('username', username);
+
             setTimeout(() => {
-                window.location.href = `/user/home?userId=${userId}`;
+                //ktra role
+                if (userRole === "ADMIN") {
+                    sessionStorage.setItem('adminId', userId);
+                    sessionStorage.setItem('adminName', username);
+                    window.location.href = `/admin/dashboard?adminId=${userId}`;
+                }
+                else {
+                    window.location.href = `/user/home?userId=${userId}`;
+                }
             }, 1000);
         } else {
             showMessage(result.message || "Đăng nhập thất bại!", "error");

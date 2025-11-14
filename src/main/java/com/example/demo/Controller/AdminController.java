@@ -7,18 +7,19 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.Entity.User;
-import com.example.demo.Model.CommonModel.Role; // Import
+import com.example.demo.Model.CommonModel.Role;
 import com.example.demo.Model.CommonModel.RegisterForm;
 import com.example.demo.Model.ResponseModel.CustomData;
 import com.example.demo.Model.ResponseModel.CustomResponse;
 import com.example.demo.Service.UserService;
 
-import  java.util.List;
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
 @CrossOrigin(origins = "*")
 public class AdminController {
+
     @Autowired
     private UserService userService;
 
@@ -27,8 +28,9 @@ public class AdminController {
         return "admin";
     }
 
-    // ds user
+    // Danh sách user
     @GetMapping("/users")
+    @ResponseBody
     public ResponseEntity<?> getAllUsers(){
         List<User> users = userService.getUsersByRole(Role.USER);
         CustomData<List<User>> data = new CustomData<>(users);
@@ -36,8 +38,9 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
-    //ds admin
+    // Danh sách admin
     @GetMapping("/admins")
+    @ResponseBody
     public ResponseEntity<?> getAllAdmins(){
         List<User> admins = userService.getUsersByRole(Role.ADMIN);
         CustomData<List<User>> data = new CustomData<>(admins);
@@ -45,8 +48,9 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
-    // add admin
+    // Thêm admin
     @PostMapping("/newad")
+    @ResponseBody
     public ResponseEntity<?> addNewUser(@RequestBody RegisterForm registerForm){
         User newAdmin = userService.createAdmin(registerForm);
 
@@ -61,8 +65,9 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
-    //lock user
+    // Khóa user
     @PutMapping("/users/lock/{id}")
+    @ResponseBody
     public ResponseEntity<?> lockUser(@PathVariable("id") int id){
         User user = userService.lockUserAccount(id);
 
@@ -70,12 +75,13 @@ public class AdminController {
             return ResponseEntity.ok(new CustomResponse<>("Error", "Không tìm thấy user", null));
         }
 
-        CustomResponse<User> response = new CustomResponse<>("Success", "Khoá tài khoản thành công", null);
+        CustomResponse<User> response = new CustomResponse<>("Success", "Khóa tài khoản thành công", null);
         return ResponseEntity.ok(response);
     }
 
-    //unlock user
+    // Mở khóa user
     @PutMapping("/users/unlock/{id}")
+    @ResponseBody
     public ResponseEntity<?> unlockUser(@PathVariable("id") int id){
         User user = userService.unlockUserAccount(id);
 
@@ -83,31 +89,35 @@ public class AdminController {
             return ResponseEntity.ok(new CustomResponse<>("Error", "Không tìm thấy user", null));
         }
 
-        CustomResponse<User> response = new CustomResponse<>("Success", "Mở khoá tài khoản thành công", null);
+        CustomResponse<User> response = new CustomResponse<>("Success", "Mở khóa tài khoản thành công", null);
         return ResponseEntity.ok(response);
     }
 
-    //promote to ad
+    // Nâng cấp thành admin
     @PutMapping("/users/promote/{id}")
+    @ResponseBody
     public ResponseEntity<?> promoteToAdmin(@PathVariable("id") int id){
         User user = userService.changeUserRole(id, Role.ADMIN);
 
         if (user == null) {
             return ResponseEntity.ok(new CustomResponse<>("Error", "Không tìm thấy user", null));
         }
+
         CustomResponse<User> response = new CustomResponse<>("Success", "Nâng cấp vai trò thành công", null);
         return ResponseEntity.ok(response);
     }
 
-    //demote to user
+    // Giáng cấp thành user
     @PutMapping("/users/demote/{id}")
-    public ResponseEntity<?> demoteToAdmin(@PathVariable("id") int id){
+    @ResponseBody
+    public ResponseEntity<?> demoteToUser(@PathVariable("id") int id){
         User user = userService.changeUserRole(id, Role.USER);
 
         if (user == null) {
             return ResponseEntity.ok(new CustomResponse<>("Error", "Không tìm thấy user", null));
         }
-        CustomResponse<User> response = new CustomResponse<>("Success", "Nâng cấp vai trò thành công", null);
+
+        CustomResponse<User> response = new CustomResponse<>("Success", "Hạ cấp vai trò thành công", null);
         return ResponseEntity.ok(response);
     }
 }
