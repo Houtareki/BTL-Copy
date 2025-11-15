@@ -126,7 +126,7 @@ public class AdminMovieController {
         return ResponseEntity.ok(new CustomResponse<>("Success", "Lấy danh sách phim thành công", new CustomData<>(moviePage)));
     }
 
-    @GetMapping("/search/movies")
+    @PostMapping("/search/movies")
     @ResponseBody
     public ResponseEntity<?> searchMovies(
             @RequestParam("userId") int userId,

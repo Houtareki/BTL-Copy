@@ -49,7 +49,7 @@ form.addEventListener("submit", async function (e) {
                 if (userRole === "ADMIN") {
                     sessionStorage.setItem('adminId', userId);
                     sessionStorage.setItem('adminName', username);
-                    window.location.href = `/admin/dashboard?adminId=${userId}`;
+                    window.location.href = `/admin/dashboard?userId=${userId}`;
                 }
                 else {
                     window.location.href = `/user/home?userId=${userId}`;
