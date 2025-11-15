@@ -1,6 +1,7 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Entity.*;
+import com.example.demo.Model.CommonModel.EpisodeAndMovieTitle;
 import com.example.demo.Service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -522,5 +523,115 @@ public class AdminMovieController {
         }
 
         return ResponseEntity.ok(new CustomResponse<>("Success", null, null));
+    }
+
+    //-------------------------Episode------------------
+    @Autowired
+    private EpisodeService episodeService;
+
+    @GetMapping("/search/episodes")
+    @ResponseBody
+    public ResponseEntity<?> searchEpisodes(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "pageNo") int pageNo,
+            @RequestParam(name = "keyword") String keyword){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        Page<EpisodeAndMovieTitle> episodes = episodeService.searchEpisode(keyword, pageNo);
+        CustomData<Page<EpisodeAndMovieTitle>> data = new CustomData<>(episodes);
+        return ResponseEntity.ok(new CustomResponse<>("Success", null, data));
+    }
+
+    @GetMapping("/episode")
+    @ResponseBody
+    public ResponseEntity<?> getEpisode(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "episodeId") int episodeId){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        Optional<Episode> episode = episodeService.getEpisodeById(episodeId);
+
+        if (episode.isEmpty()) {
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Không tìm thấy tập phim", null));
+        }
+
+        CustomData<Episode> data = new CustomData<>(episode.get());
+        return ResponseEntity.ok(new CustomResponse<>("Success", null, data));
+    }
+
+    @GetMapping("/episodes/unlinked")
+    @ResponseBody
+    public ResponseEntity<?> getUnlinkedEpisodes(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "pageNo") int pageNo){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        Page<Episode> episodes = episodeService.getUnlinkedEpisodes(pageNo);
+        CustomData<Page<Episode>> data = new CustomData<>(episodes);
+        return ResponseEntity.ok(new CustomResponse<>("Success", null, data));
+    }
+
+    @PostMapping("/add/episode")
+    @ResponseBody
+    public ResponseEntity<?> addEpisode(
+            @RequestParam(name = "userId") int userId,
+            @RequestBody Episode episode){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        Episode newEpisode = episodeService.addEpisode(episode);
+        if (newEpisode == null) {
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Thêm thất bại!", null));
+        }
+
+        return ResponseEntity.ok(new CustomResponse<>("Success", "Thêm thành công!", null));
+    }
+
+    @PutMapping("/update/episode")
+    @ResponseBody
+    public ResponseEntity<?> updateEpisode(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "episodeId") int episodeId,
+            @RequestBody Episode episode){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        Episode updatedEpisode = episodeService.updateEpisode(episodeId, episode);
+        if (updatedEpisode == null) {
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Cập nhật thất bại!", null));
+        }
+
+        return ResponseEntity.ok(new CustomResponse<>("Success", "Cập nhật thành công!", null));
+    }
+
+    @DeleteMapping("/delete/episode")
+    @ResponseBody
+    public ResponseEntity<?> deleteEpisode(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "episodeId") int episodeId){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        boolean isDeleted = episodeService.deleteEpisode(episodeId);
+        if (isDeleted) {
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Xóa thất bại!", null));
+        }
+
+        return ResponseEntity.ok(new CustomResponse<>("Error", "Xóa thành công!", null));
     }
 }

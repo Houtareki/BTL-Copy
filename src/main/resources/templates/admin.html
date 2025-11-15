@@ -346,11 +346,19 @@
                 let html = `<div class="flex justify-between items-center mb-3">
                                   <div class="text-sm text-gray-300">Total: ${pageObj.totalElements ?? list.length}</div>
                                 </div>`;
-                html += `<table class="min-w-full"><thead class="bg-gray-800"><tr>
-                         <th class="p-2">ID</th><th class="p-2">Title</th><th class="p-2">Year</th>
-                         <th class="p-2">Status</th><th class="p-2">Country</th><th class="p-2">Lang</th>
-                         <th class="p-2">Actions</th></tr></thead><tbody>`;
-
+                html += `<table class="min-w-full">
+                            <thead class="bg-gray-800">
+                              <tr>
+                                <th class="p-2 text-left">ID</th>
+                                <th class="p-2 text-left">Title</th>
+                                <th class="p-2 text-left">Year</th>
+                                <th class="p-2 text-left">Status</th>
+                                <th class="p-2 text-left">Country</th>
+                                <th class="p-2 text-left">Lang</th>
+                                <th class="p-2 text-left">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>`;
                 list.forEach(m => {
                     html += `<tr class="border-t border-gray-700">
                                 <td class="p-2">${m.movieId}</td>
@@ -856,18 +864,47 @@
             const pageObj = resp.data.data;
             const list = pageObj.content || [];
             let html = `<div class="text-sm text-gray-300 mb-2">Total: ${pageObj.totalElements ?? list.length}</div>`;
-            html += `<table><thead class="bg-gray-800"><tr><th class="p-2">ID</th><th class="p-2">Movie ID</th><th class="p-2 truncate max-w-[200px]">Name</th><th class="p-2">Actions</th></tr></thead><tbody>`;
+
+            html += `<table class="w-full text-left table-fixed"><thead class="bg-gray-800"><tr>
+                        <th class="p-2 w-20">ID</th>
+                        <th class="p-2 w-48">Movie Title</th>
+                        <th class="p-2 w-40">Episode Name</th>
+                        <th class="p-2 w-80">Video URL</th>
+                        <th class="p-2 w-44">Actions</th>
+            </tr></thead><tbody>`;
+
             list.forEach(ep => {
+                // Dữ liệu 'ep' là {episodeId, movieTitle, episodeName, videoUrl, movieId}
+
+                const movieTitleDisplay = ep.movieTitle
+                    ? escapeHtml(ep.movieTitle)
+                    : (ep.movieId === -1 ? '<em class="text-gray-500">Unlinked</em>' : `<span class="text-gray-500">ID: ${ep.movieId}</span>`);
+
                 html += `<tr class="border-t border-gray-700">
                                 <td class="p-2">${ep.episodeId}</td>
-                                <td class="p-2">${ep.movieId}</td>
-                                <td class="p-2 truncate max-w-[400px]" title="${escapeHtml(ep.name)}">
-                                    ${escapeHtml(ep.name)}
+
+                                <td class="p-2 truncate max-w-[180px]" title="${escapeHtml(ep.movieTitle || '')}">
+                                    ${movieTitleDisplay}
                                 </td>
 
+                                <td class="p-2 truncate" title="${escapeHtml(ep.episodeName)}">
+                                    ${escapeHtml(ep.episodeName)}
+                                </td>
+
+                                <td class="p-2 truncate max-w-[180px]" title="${escapeAttr(ep.videoUrl || '')}">
+                                    ${escapeHtml(ep.videoUrl || '')}
+                                </td>
                                 <td class="p-2">
-                                  <button class="px-2 py-1 bg-green-600 rounded hover:bg-green-700" onclick="showEpisodeEdit(${ep.episodeId})">Edit</button>
-                                  <button class="px-2 py-1 bg-red-600 rounded hover:bg-red-700" onclick="deleteEpisode(${ep.episodeId})">Delete</button>
+                                  <div class="flex space-x-2">
+                                    <button class="px-2 py-1 bg-green-600 rounded hover:bg-green-700" onclick="showEpisodeEdit(${ep.episodeId})">Edit</button>
+                                    <button class="px-2 py-1 bg-red-600 rounded hover:bg-red-700" onclick="deleteEpisode(${ep.episodeId})">Delete</button>
+                                    <a class="px-2 py-1 bg-blue-600 rounded hover:bg-blue-700 text-white no-underline"
+                                       href="${escapeAttr(ep.videoUrl || '#')}"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                       View
+                                    </a>
+                                  </div>
                                 </td>
                               </tr>`;
             });
