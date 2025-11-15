@@ -442,7 +442,7 @@
                 <option value="showing" ${m.movieStatus === 'showing' ? 'selected' : ''}>showing</option>
                 <option value="finished" ${m.movieStatus === 'finished' ? 'selected' : ''}>finished</option>
               </select>
-          
+
               <div class="flex justify-end gap-2 mt-3">
                 <button class="px-3 py-1 bg-gray-700 rounded" onclick="closeModal()">Cancel</button>
                 <button class="px-3 py-1 bg-rose-600 rounded" onclick="saveMovie(${m.movieId ? m.movieId : 'null'})">Save</button>
@@ -503,7 +503,15 @@
             const pageObj = resp.data.data;
             const list = pageObj.content || [];
             let html = `<div class="text-sm text-gray-300 mb-2">Total: ${pageObj.totalElements ?? list.length}</div>`;
-            html += `<table><thead class="bg-gray-800"><tr><th class="p-2">ID</th><th class="p-2">Name</th><th class="p-2">Actions</th></tr></thead><tbody>`;
+            html += `<table class="w-full text-left">
+                        <thead class="bg-gray-800">
+                            <tr>
+                                <th class="p-2 w-24">ID</th>
+                                <th class="p-2">Name</th>
+                                <th class="p-2 w-40">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
             list.forEach(g => {
                 html += `<tr class="border-t border-gray-700">
                                 <td class="p-2">${g.genreId}</td>
@@ -982,13 +990,13 @@
                 <option value="FIXING">FIXING</option>
                 <option value="REMOVED">REMOVED</option>
               </select>
-          
+
               <label class="block text-sm mb-1 mt-2">Role</label>
               <select id="user_role" class="w-full p-2 bg-gray-800 rounded">
                 <option value="USER" selected>USER</option>
                 <option value="ADMIN">ADMIN</option>
               </select>
-          
+
               <div class="mt-4 flex justify-end gap-2">
                 <button class="px-3 py-1 bg-gray-700 rounded" onclick="closeModal()">Cancel</button>
                 <button class="px-3 py-1 bg-green-600 rounded" onclick="saveUser()">Save</button>
@@ -1003,17 +1011,17 @@
 
             openModal('Edit User', `
               <label class="block text-sm mb-1">Username</label>
-              <input id="user_username" class="w-full p-2 bg-gray-800 rounded" 
+              <input id="user_username" class="w-full p-2 bg-gray-800 rounded"
                      value="${escapeAttr(r.data.data.username)}" />
-        
+
               <label class="block text-sm mb-1 mt-2">Email</label>
               <input id="user_email" class="w-full p-2 bg-gray-800 rounded" type="email"
                      value="${escapeAttr(r.data.data.email)}" />
-        
+
               <label class="block text-sm mb-1 mt-2">Password</label>
-              <input id="user_password" class="w-full p-2 bg-gray-800 rounded" type="text" 
+              <input id="user_password" class="w-full p-2 bg-gray-800 rounded" type="text"
                      value="${escapeAttr(r.data.data.password)}" />
-        
+
               <label class="block text-sm mb-1 mt-2">State</label>
               <select id="user_state" class="w-full p-2 bg-gray-800 rounded">
                 <option value="PENDING" ${r.data.data.state === 'PENDING' ? 'selected' : ''}>PENDING</option>
@@ -1021,13 +1029,13 @@
                 <option value="FIXING" ${r.data.data.state === 'FIXING' ? 'selected' : ''}>FIXING</option>
                 <option value="REMOVED" ${r.data.data.state === 'REMOVED' ? 'selected' : ''}>REMOVED</option>
               </select>
-          
+
               <label class="block text-sm mb-1 mt-2">Role</label>
               <select id="user_role" class="w-full p-2 bg-gray-800 rounded">
                 <option value="USER" ${r.data.data.role === 'USER' ? 'selected' : ''}>USER</option>
                 <option value="ADMIN" ${r.data.data.role === 'ADMIN' ? 'selected' : ''}>ADMIN</option>
               </select>
-          
+
               <div class="mt-4 flex justify-end gap-2">
                 <button class="px-3 py-1 bg-gray-700 rounded" onclick="closeModal()">Cancel</button>
                 <button class="px-3 py-1 bg-rose-600 rounded" onclick="updateUser(${id})">Save</button>
@@ -1273,9 +1281,9 @@
                                 <button id="addSelectedActorsBtn" class="px-3 py-1 bg-green-600 rounded">Add selected</button>
                             </div>
                         </div>
-                        
+
                         <ul id="actorSearchResults" class="space-y-1 max-h-48 overflow-auto border p-2 rounded bg-gray-800"></ul>
-                        
+
                     </div>
                 </div>
             </div>
@@ -1342,9 +1350,9 @@
                                 <button id="addSelectedDirectorsBtn" class="px-3 py-1 bg-rose-600 rounded">Add selected</button>
                             </div>
                         </div>
-                        
+
                         <ul id="directorSearchResults" class="space-y-1 max-h-48 overflow-auto border p-2 rounded bg-gray-800"></ul>
-                        
+
                     </div>
                 </div>
             </div>
@@ -1357,7 +1365,7 @@
                         <input type="checkbox" value="${d.directorId}"/>
                         <span>${escapeHtml(d.name)} (ID:${d.directorId})</span>
                     </label>
-                    
+
                 </li>
             `);
             });
@@ -1402,7 +1410,7 @@
                     </div>
                     <ul id="currentEpisodesList" class="space-y-1 max-h-64 overflow-auto border p-2 rounded bg-gray-800"></ul>
                 </div>
-            
+
                 <!-- Danh sách tập chưa thêm -->
                 <div>
                     <div class="flex justify-between items-center mb-2">
@@ -1429,7 +1437,7 @@
                 </label>
                 <div class="flex gap-2">
                     <a class="px-2 py-1 bg-gray-700 rounded" href="${escapeAttr(ep.videoUrl || '#')}" target="_blank">View</a>
-                    
+
                 </div>
             </li>
         `);
@@ -1489,7 +1497,7 @@
                             <div class="text-sm mt-1">${escapeHtml(c.content)}</div>
                         </div>
                     </label>
-                    
+
                 </li>
             `);
             });
