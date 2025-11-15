@@ -1,19 +1,14 @@
 package com.example.demo.Controller;
 
-import com.example.demo.Entity.Genre;
-import com.example.demo.Entity.User;
-import com.example.demo.Service.GenreService;
-import com.example.demo.Service.MovieService;
-import com.example.demo.Service.UserService;
+import com.example.demo.Entity.*;
+import com.example.demo.Service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.Entity.Movie;
 import com.example.demo.Model.ResponseModel.CustomData;
 import com.example.demo.Model.ResponseModel.CustomResponse;
-import com.example.demo.Service.MovieServiceAdmin;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -303,4 +298,229 @@ public class AdminMovieController {
         return ResponseEntity.ok(new CustomResponse<>("Success", "Xóa thành công!", null));
     }
 
+
+    //----------------------------------Director-----------------------------------
+
+    @Autowired
+    private DirectorService directorService;
+
+    @GetMapping("/directors")
+    @ResponseBody
+    public ResponseEntity<?> getAllDirectors(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "pageNo") int pageNo){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        Page<Director> directorPage = directorService.getAllDirectors(pageNo);
+        CustomData<Page<Director>> data = new CustomData<>(directorPage);
+
+        return ResponseEntity.ok(new CustomResponse<>("Success", null, data));
+    }
+
+    @GetMapping("/search/directors")
+    @ResponseBody
+    public ResponseEntity<?> searchDirectors(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "pageNo") int pageNo,
+            @RequestParam(name = "keyword") String keyword){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        Page<Director> directorPage = directorService.searchDirectors(keyword, pageNo);
+        CustomData<Page<Director>> data = new CustomData<>(directorPage);
+        return ResponseEntity.ok(new CustomResponse<>("Success", null, data));
+    }
+
+    @GetMapping("/director")
+    @ResponseBody
+    public ResponseEntity<?> getDirectorData(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "directorId") int directorId){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        Optional<Director> director = directorService.findById(directorId);
+
+        if (director.isEmpty()) {
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Không tìm thấy đạo diễn", null));
+        }
+
+        CustomData<Director> data = new CustomData<>(director.get());
+        return ResponseEntity.ok(new CustomResponse<>("Success", null, data));
+    }
+
+    @PostMapping("/add/director")
+    @ResponseBody
+    public ResponseEntity<?> addDirector(
+            @RequestParam(name = "userId") int userId,
+            @RequestBody Director director){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        Director newDirector = directorService.addDirector(director);
+
+        if (newDirector == null) {
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Thêm thất bại.", null));
+        }
+
+        return ResponseEntity.ok(new CustomResponse<>("Success", null, null));
+    }
+
+    @PutMapping("/update/dỉrector")
+    @ResponseBody
+    public ResponseEntity<?> updateDirector(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "directorId") int directorId,
+            @RequestBody Director director){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        Director updatedDirector = directorService.updateDirector(directorId, director);
+        if (updatedDirector == null) {
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Cập nhật thất bại.", null));
+        }
+
+        return ResponseEntity.ok(new CustomResponse<>("Success", null, null));
+    }
+
+    @DeleteMapping("/delete/director")
+    @ResponseBody
+    public ResponseEntity<?> deleteDirector(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "directorId") int directorId){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        boolean isDeleted = directorService.deleteDirector(directorId);
+
+        if (!isDeleted) {
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Xóa thất bại.", null));
+        }
+
+        return ResponseEntity.ok(new CustomResponse<>("Success", null, null));
+    }
+
+    //------------------------------Actor---------------------------------
+
+    @Autowired
+    private ActorService actorService;
+
+    @GetMapping("/actors")
+    @ResponseBody
+    public ResponseEntity<?> getAllActors(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "pageNo") int pageNo){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        Page<Actor> actorPage = actorService.getAllActors(pageNo);
+        CustomData<Page<Actor>> data = new CustomData<>(actorPage);
+        return ResponseEntity.ok(new CustomResponse<>("Success", null, data));
+    }
+
+    @GetMapping("/search/actors")
+    @ResponseBody
+    public ResponseEntity<?> searchActors(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "pageNo") int pageNo,
+            @RequestParam(name = "keyword") String keyword){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        Page<Actor> actorPage = actorService.searchActors(keyword, pageNo);
+        CustomData<Page<Actor>> data = new CustomData<>(actorPage);
+        return ResponseEntity.ok(new CustomResponse<>("Success", null, data));
+    }
+
+    @GetMapping("/actor")
+    @ResponseBody
+    public ResponseEntity<?> getActorData(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "actorId") int actorId){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        Optional<Actor> actor = actorService.getActorById(actorId);
+
+        if (actor.isEmpty()) {
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Không tìm thấy diễn viên", null));
+        }
+
+        CustomData<Actor> data = new CustomData<>(actor.get());
+        return ResponseEntity.ok(new CustomResponse<>("Success", null, data));
+    }
+
+    @PostMapping("/add/actor")
+    @ResponseBody
+    public ResponseEntity<?> addActor(
+            @RequestParam(name = "userId") int userId,
+            @RequestBody Actor actor){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        Actor newActor = actorService.addActor(actor);
+        if (newActor == null) {
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Thêm thất bại.", null));
+        }
+        return ResponseEntity.ok(new CustomResponse<>("Success", null, null));
+    }
+
+    @PutMapping("/update/actor")
+    @ResponseBody
+    public ResponseEntity<?> updateActor(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "actorId") int actorId,
+            @RequestBody Actor actor){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        Actor updatedActor = actorService.updateActor(actorId, actor);
+        if (updatedActor == null) {
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Cập nhật thất bại.", null));
+        }
+
+        return ResponseEntity.ok(new CustomResponse<>("Success", null, null));
+    }
+
+    @DeleteMapping("/delete/actor")
+    @ResponseBody
+    public ResponseEntity<?> deleteActor(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "actorId") int actorId){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        boolean isDeleted = actorService.deleteActor(actorId);
+
+        if (!isDeleted) {
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Xóa thất bại.", null));
+        }
+
+        return ResponseEntity.ok(new CustomResponse<>("Success", null, null));
+    }
 }

@@ -626,7 +626,15 @@
             const pageObj = resp.data.data;
             const list = pageObj.content || [];
             let html = `<div class="text-sm text-gray-300 mb-2">Total: ${pageObj.totalElements ?? list.length}</div>`;
-            html += `<table><thead class="bg-gray-800"><tr><th class="p-2">ID</th><th class="p-2">Name</th><th class="p-2">Actions</th></tr></thead><tbody>`;
+            html += `<table class="w-full text-left">
+                        <thead class="bg-gray-800">
+                            <tr>
+                                <th class="p-2 w-24">ID</th>
+                                <th class="p-2">Name</th>
+                                <th class="p-2 w-40">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
             list.forEach(a => {
                 html += `<tr class="border-t border-gray-700">
                                 <td class="p-2">${a.actorId}</td>
@@ -736,7 +744,15 @@
             const pageObj = resp.data.data;
             const list = pageObj.content || [];
             let html = `<div class="text-sm text-gray-300 mb-2">Total: ${pageObj.totalElements ?? list.length}</div>`;
-            html += `<table><thead class="bg-gray-800"><tr><th class="p-2">ID</th><th class="p-2">Name</th><th class="p-2">Actions</th></tr></thead><tbody>`;
+            html += `<table class="w-full text-left">
+                        <thead class="bg-gray-800">
+                            <tr>
+                                <th class="p-2 w-24">ID</th>
+                                <th class="p-2">Name</th>
+                                <th class="p-2 w-40">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
             list.forEach(d => {
                 html += `<tr class="border-t border-gray-700">
                                 <td class="p-2">${d.directorId}</td>
