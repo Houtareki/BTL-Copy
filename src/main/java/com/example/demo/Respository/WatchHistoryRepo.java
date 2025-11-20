@@ -19,14 +19,14 @@ public interface WatchHistoryRepo extends JpaRepository<WatchHistory, WatchHisto
 
     @Transactional
     @Query(value = "select m.* from watch_history wh left join movies m on wh.movie_id = m.movie_id where wh.user_id = :userId", nativeQuery = true)
-    public List<Movie> findWatchedMovieByUserId(@Param(value = "userId") int userId);
+    List<Movie> findWatchedMovieByUserId(@Param(value = "userId") int userId);
 
     @Transactional
     @Modifying
     @Query(value = "INSERT INTO watch_history (user_id, movie_id) VALUES (:userId, :movieId) ON DUPLICATE KEY UPDATE user_id = :userId", nativeQuery = true)
-    public void addToWatchHistory(@Param("userId") int userId, @Param("movieId") int movieId);
+    void addToWatchHistory(@Param("userId") int userId, @Param("movieId") int movieId);
 
     @Transactional
     @Query(value = "SELECT COUNT(*) FROM watch_history WHERE user_id = :userId AND movie_id = :movieId", nativeQuery = true)
-    public int checkIfWatched(@Param("userId") int userId, @Param("movieId") int movieId);
+    int checkIfWatched(@Param("userId") int userId, @Param("movieId") int movieId);
 }

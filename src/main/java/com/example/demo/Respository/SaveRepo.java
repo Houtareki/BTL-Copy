@@ -20,23 +20,23 @@ public interface SaveRepo extends JpaRepository<UserSavedMovie, SaveId>{
 
     @Transactional
     @Query(value = "select count(movie_id) from saves s left join users u on s.user_id = u.user_id where u.user_id = :userId and movie_id = :movieId", nativeQuery = true)
-    public int isMovieSavedByUser(@Param(value = "userId") int userId, @Param(value = "movieId") int movieId);
+    int isMovieSavedByUser(@Param(value = "userId") int userId, @Param(value = "movieId") int movieId);
 
     @Transactional
     @Query(value = "select count(*) from saves s left join movies m on s.movie_id = m.movie_id where s.movie_id = :movieId", nativeQuery = true)
-    public int findTotalSavesByMovieId(@Param(value = "movieId") int movieId);
+    int findTotalSavesByMovieId(@Param(value = "movieId") int movieId);
 
     @Transactional
     @Modifying
     @Query(value = "insert into saves (user_id, movie_id, added_at) values (:userId,:movieId,:addedAt)", nativeQuery = true)
-    public int addToRepo(@Param(value = "userId") int userId, @Param(value = "movieId") int movieId, @Param(value = "addedAt") LocalDateTime addedAt);
+    int addToRepo(@Param(value = "userId") int userId, @Param(value = "movieId") int movieId, @Param(value = "addedAt") LocalDateTime addedAt);
 
     @Transactional
     @Modifying
     @Query(value = "delete from saves where user_id=:userId and movie_id = :movieId", nativeQuery = true)
-    public int removeFromRepo(@Param(value = "userId") int userId, @Param(value = "movieId") int movieId);
+    int removeFromRepo(@Param(value = "userId") int userId, @Param(value = "movieId") int movieId);
 
     @Transactional
     @Query(value = "select m.* from saves s left join movies m on s.movie_id = m.movie_id where s.user_id = :userId", nativeQuery = true)
-    public List<Movie> findAllSavedMovieByUserId(@Param("userId") int userId);
+    List<Movie> findAllSavedMovieByUserId(@Param("userId") int userId);
 }

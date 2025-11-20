@@ -8,9 +8,6 @@ public class MovieActorId implements Serializable{
     private Integer movieId;
     private Integer actorId;
 
-    public MovieActorId() {
-    }
-
     public MovieActorId(Integer movieId, Integer actorId) {
         this.movieId = movieId;
         this.actorId = actorId;
@@ -44,6 +41,4 @@ public class MovieActorId implements Serializable{
     public void setActorId(Integer actorId) {
         this.actorId = actorId;
     }
-
-    
 }

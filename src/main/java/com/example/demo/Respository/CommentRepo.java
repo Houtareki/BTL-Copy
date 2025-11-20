@@ -14,14 +14,16 @@ import jakarta.transaction.Transactional;
 
 @Repository
 public interface CommentRepo extends JpaRepository<Comment,Integer> {
-    
+
     @Transactional
     @Query(value = "select * from comments where movie_id = :movieId", nativeQuery = true)
-    public List<Comment> getAllCommentsByMovieId(@Param(value = "movieId") int movieId);
+    List<Comment> getAllCommentsByMovieId(@Param(value = "movieId") int movieId);
 
 
     @Transactional
     @Modifying
     @Query(value = "insert into comments (user_id, movie_id, content) values (:userId, :movieId, :content);", nativeQuery = true)
-    public void addComment(@Param(value = "userId") int userId, @Param(value = "movieId") int movieId, @Param(value = "content") String content);
+    void addComment(@Param(value = "userId") int userId, @Param(value = "movieId") int movieId, @Param(value = "content") String content);
+
+    void deleteByMovieId(int movieId);
 }

@@ -11,9 +11,6 @@ public class SaveId {
         this.movieId = movieId;
     }
 
-    public SaveId() {
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o)

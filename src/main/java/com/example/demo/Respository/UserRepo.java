@@ -1,5 +1,7 @@
 package com.example.demo.Respository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -29,4 +31,10 @@ public interface UserRepo extends JpaRepository<User,Integer>{
     @Modifying
     @Query(value = "update users set password = :newPassword where user_id = :userId", nativeQuery = true)
     void changeUserPassword(@Param(value = "userId") int userId, @Param(value = "newPassword") String newPassword);
+
+    @Query("SELECT u FROM User u WHERE u.username like %:keyword% or u.email like %:keyword%")
+    Page<User> searchByUsernameOrEmail(@Param("keyword") String keyword, Pageable pageable);
+
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
 }

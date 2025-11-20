@@ -17,5 +17,7 @@ import jakarta.transaction.Transactional;
 public interface MovieActorRepo extends JpaRepository<MovieActor, MovieActorId>{
     @Transactional
     @Query(value = "select a.* from movie_actors mc left join actors a on mc.actor_id = a.actor_id where mc.movie_id = :movieId;", nativeQuery = true)
-    public List<Actor> findActorsByMovieId(@Param(value = "movieId") int movieId);
+    List<Actor> findActorsByMovieId(@Param(value = "movieId") int movieId);
+
+    void deleteByMovieId(int movieId);
 }

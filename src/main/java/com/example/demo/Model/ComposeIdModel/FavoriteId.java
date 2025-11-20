@@ -21,8 +21,6 @@ public class FavoriteId implements Serializable {
         if(! (o instanceof FavoriteId) ) return false;
         FavoriteId other = (FavoriteId) o;
         return Objects.equals(userId, other.getUserId()) && Objects.equals(movieId, other.getMovieId());
-
-
     }
 
     @Override 

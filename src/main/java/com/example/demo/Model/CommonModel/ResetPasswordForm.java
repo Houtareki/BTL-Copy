@@ -6,7 +6,6 @@ public class ResetPasswordForm {
 
     public ResetPasswordForm(String password, String comfirnPassword) {
         this.password = password;
-        this.confirmPassword = confirmPassword;
     }
 
     public String getPassword() {

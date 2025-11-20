@@ -1,5 +1,7 @@
 package com.example.demo.Service;
 
+import com.example.demo.Model.CommonModel.UserForm;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Entity.User;
@@ -10,18 +12,25 @@ import java.util.List;
 
 @Service
 public interface UserService {
-    public User comfirmUserLogin(LoginForm loginForm);
-    public User checkRegisterForm(RegisterForm registerForm);
-    public User findByUserId(int userId);
-    public User findByEmail(String email);
-    public User activateUser(int userId);
-    public User changeUserPassword(int userId, String newPassword, String comfirmPassword);
-    public User updateUserFavoritedRepo(int userId, int movieId);
-    public User updateUserSavedRepo(int userId, int movieId);
+    User comfirmUserLogin(LoginForm loginForm);
+    User checkRegisterForm(RegisterForm registerForm);
+    User findByUserId(int userId);
+    User findByEmail(String email);
+    User activateUser(int userId);
+    User changeUserPassword(int userId, String newPassword, String comfirmPassword);
+    User updateUserFavoritedRepo(int userId, int movieId);
+    User updateUserSavedRepo(int userId, int movieId);
 
-    public List<User> getUsersByRole(Role role);
-    public User lockUserAccount(int userId);
-    public User unlockUserAccount(int userId);
-    public User changeUserRole(int userId, Role newRole);
-    public User createAdmin(RegisterForm registerForm);
+    List<User> getUsersByRole(Role role);
+    User lockUserAccount(int userId);
+    User unlockUserAccount(int userId);
+    User changeUserRole(int userId, Role newRole);
+    User createAdmin(RegisterForm registerForm);
+
+    User getUserById(int userId);
+    Page<User> getAllUsers(int pageNo);
+    Page<User> searchUsers(String keyword, int pageNo);
+    User createUser(UserForm userForm);
+    User updateUser(int userId, UserForm userForm);
+    boolean deleteUser(int userId);
 }

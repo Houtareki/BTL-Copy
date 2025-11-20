@@ -6,5 +6,5 @@ import com.example.demo.Model.CommonModel.EmailDetail;
 
 @Service
 public interface EmailService {
-    public void sendEmail(EmailDetail emailDetail);
+    void sendEmail(EmailDetail emailDetail);
 }

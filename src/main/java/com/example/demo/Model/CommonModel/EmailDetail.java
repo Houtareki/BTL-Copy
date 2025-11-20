@@ -5,9 +5,6 @@ public class EmailDetail {
     private String msgBody;
     private String subject;
 
-    public EmailDetail() {
-    }
-
     public EmailDetail(String recipient, String msgBody, String subject) {
         this.recipient = recipient;
         this.msgBody = msgBody;

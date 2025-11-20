@@ -8,9 +8,6 @@ public class MovieGenreId implements Serializable {
     private Integer movieId;
     private Integer genreId;
 
-    public MovieGenreId() {
-    }
-
     public MovieGenreId(Integer movieId, Integer genreId) {
         this.movieId = movieId;
         this.genreId = genreId;

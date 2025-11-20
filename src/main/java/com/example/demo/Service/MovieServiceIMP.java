@@ -2,8 +2,14 @@ package com.example.demo.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import com.example.demo.Respository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Entity.Comment;
@@ -14,17 +20,10 @@ import com.example.demo.Entity.User;
 import com.example.demo.Model.CommonModel.CommentForm;
 import com.example.demo.Model.ResponseModel.CommentData;
 import com.example.demo.Model.ResponseModel.MovieInteractionData;
-import com.example.demo.Respository.CommentRepo;
-import com.example.demo.Respository.EpisodeRepo;
-import com.example.demo.Respository.FavoriteRepo;
-import com.example.demo.Respository.GenreRepo;
-import com.example.demo.Respository.MovieRepo;
-import com.example.demo.Respository.SaveRepo;
-import com.example.demo.Respository.UserRepo;
-import com.example.demo.Respository.WatchHistoryRepo;
 
 @Service
 public class MovieServiceIMP implements MovieService {
+
 
     @Autowired
     private MovieRepo movieRepo;
@@ -42,93 +41,104 @@ public class MovieServiceIMP implements MovieService {
     private SaveRepo saveRepo;
 
     @Autowired
-    private WatchHistoryRepo watchHistoryRepo;
-
-    @Autowired
     private GenreRepo genreRepo;
 
     @Autowired
     private CommentRepo commentRepo;
 
+    @Autowired
+    private WatchHistoryRepo watchHistoryRepo;
+    @Autowired
+    private MovieActorRepo movieActorRepo;
+    @Autowired
+    private MovieDirectorRepo movieDirectorRepo;
+    @Autowired
+    private MovieGenreRepo movieGenreRepo;
+    @Autowired
+    private EpisodeRepo episodeRepo;
+
     public List<Movie> getBannerMovies() {
-        List<Movie> bannerMovies = movieRepo.getBannerMovies();
-        return bannerMovies;
+        return movieRepo.getBannerMovies();
     }
 
     public Movie getMovieByMovieId(int movieId) {
-        Movie movie = movieRepo.findById(movieId).get();
-        return movie;
+        return movieRepo.findById(movieId).orElse(null);
     }
 
     public List<Episode> findAllEpisodeByMovieId(int movieId) {
-        List<Episode> episodes = episMovieRepo.findAllEpisodeByMovieId(movieId);
-        return episodes;
+        return episMovieRepo.findAllEpisodeByMovieId(movieId);
     }
 
     public Movie findMovieById(int movieId) {
-        Movie movie = movieRepo.findById(movieId).get();
-        return movie;
+        return movieRepo.findById(movieId).orElse(null);
     }
 
     public MovieInteractionData getMovieInteractionData(int userId, int movieId) {
         MovieInteractionData res = new MovieInteractionData(userId, movieId, 0, 0, 0, false, false);
         User user = this.userRepo.findByUserId(userId);
         Movie movie = this.movieRepo.findByMovieId(movieId);
-        if(user==null || movie == null) {
+        if (user == null || movie == null) {
             return null;
-        } 
+        }
 
         res.setTotalLikes(favoriteRepo.findTotalLikesByMovieId(movieId));
         res.setTotalSaves(saveRepo.findTotalSavesByMovieId(movieId));
         res.setTotalView(movieRepo.findAllViewsByMovieId(movieId));
-        res.setUserLikedThis(favoriteRepo.isMovieFavoritedByUser(userId, movieId)==0 ? false : true);
-        res.setUserSavedThis(saveRepo.isMovieSavedByUser(userId, movieId)==0 ? false : true);
+        res.setUserLikedThis(favoriteRepo.isMovieFavoritedByUser(userId, movieId) != 0);
+        res.setUserSavedThis(saveRepo.isMovieSavedByUser(userId, movieId) != 0);
         return res;
     }
 
     public List<Movie> getShowingMovies(int userId) {
         User user = this.userRepo.findByUserId(userId);
-        if(user!=null) {
-            List<Movie> showingMovies = this.movieRepo.getShowingMovies();
-            return showingMovies;
+        if (user != null) {
+            return this.movieRepo.getShowingMovies();
         }
         return null;
     }
 
     public List<Movie> getSuggestedMovies(int userId) {
         User user = this.userRepo.findByUserId(userId);
-        if(user!=null) {
-            List<Movie> suggestedMobies = this.movieRepo.getSuggestedMovies();
-            return suggestedMobies;
+        if (user != null) {
+            return this.movieRepo.getSuggestedMovies();
         }
         return null;
     }
 
     public List<Genre> getAllGenres(int userId) {
         User user = this.userRepo.findByUserId(userId);
-        if(user!=null) {
-            List<Genre> genres = this.genreRepo.getAllGenres();
-            return genres;
+        if (user != null) {
+            return this.genreRepo.getAllGenres();
         }
         return null;
     }
 
     public List<String> getAllCountries(int userId) {
         User user = this.userRepo.findByUserId(userId);
-        if(user!=null) {
-            List<String> genres = this.movieRepo.getAllCountries();
-            return genres;
+        if (user != null) {
+            return this.movieRepo.getAllCountries();
+        }
+        return null;
+    }
+
+    public List<Integer> getAllYears(int userId) {
+        User user = this.userRepo.findByUserId(userId);
+        if (user != null) {
+            List<Integer> years = this.movieRepo.getAllYears();
+            return (years != null && !years.isEmpty()) ? years : null;
         }
         return null;
     }
 
     public List<CommentData> getAllCommentsByMovieId(int userId, int movieId) {
         User user = this.userRepo.findByUserId(userId);
-        if(user!=null) {
+        if (user != null) {
             List<Comment> comments = this.commentRepo.getAllCommentsByMovieId(movieId);
             List<CommentData> commentDatas = new ArrayList<>();
-            for(Comment comment : comments) {
-                commentDatas.add(new CommentData(comment.getCommentId(), comment.getUserId(), comment.getMovieId(), comment.getContent(), comment.getCreatedAt(), this.userRepo.findByUserId(comment.getUserId()).getUsername()));
+            for (Comment comment : comments) {
+                commentDatas.add(new CommentData(comment.getCommentId(), comment.getUserId(), comment.getMovieId(),
+                        comment.getContent(), comment.getCreatedAt(),
+                        this.userRepo.findByUserId(comment.getUserId()).getUsername()));
             }
             return commentDatas;
         }
@@ -141,7 +151,7 @@ public class MovieServiceIMP implements MovieService {
         String content = commentForm.getContent();
         User user = userRepo.findByUserId(userId);
         Movie movie = movieRepo.findByMovieId(movieId);
-        if(user!=null && movie!=null && content!=null && content.length()>0) {
+        if (user != null && movie != null && content != null && !content.isEmpty()) {
             commentRepo.addComment(userId, movieId, content);
             return new Comment();
         }
@@ -169,9 +179,9 @@ public class MovieServiceIMP implements MovieService {
 
     public List<Movie> getAllMoviesByGenreId(int userId, int genreId) {
         User user = userRepo.findByUserId(userId);
-        if(user!=null) {
+        if (user != null) {
             List<Movie> movies = movieRepo.getAllMoviesByGenre(genreId);
-            if(movies!=null && movies.size()>0) {
+            if (movies != null && !movies.isEmpty()) {
                 return movies;
             }
             return null;
@@ -181,9 +191,9 @@ public class MovieServiceIMP implements MovieService {
 
     public List<Movie> getAllMoviesByCountry(int userId, String country) {
         User user = userRepo.findByUserId(userId);
-        if(user!=null) {
+        if (user != null) {
             List<Movie> movies = movieRepo.getAllMoviesByCountry(country);
-            if(movies!=null && movies.size()>0) {
+            if (movies != null && !movies.isEmpty()) {
                 return movies;
             }
             return null;
@@ -195,8 +205,7 @@ public class MovieServiceIMP implements MovieService {
     public List<Movie> getLikedMoviesByUserId(int userId) {
         User user = this.userRepo.findByUserId(userId);
         if(user!=null) {
-            List<Movie> movies = this.favoriteRepo.findAllFavoriedMovieByUerId(userId);
-            return movies;
+            return this.favoriteRepo.findAllFavoriedMovieByUerId(userId);
         }
         return null;
     }
@@ -205,8 +214,7 @@ public class MovieServiceIMP implements MovieService {
     public List<Movie> getSavedMoviesByUserId(int userId) {
         User user = this.userRepo.findByUserId(userId);
         if(user!=null) {
-            List<Movie> movies = this.saveRepo.findAllSavedMovieByUserId(userId);
-            return movies;
+            return this.saveRepo.findAllSavedMovieByUserId(userId);
         }
         return null;
     }
@@ -215,9 +223,68 @@ public class MovieServiceIMP implements MovieService {
     public List<Movie> getWatchedMoviesByUserId(int userId) {
         User user = this.userRepo.findByUserId(userId);
         if(user!=null) {
-            List<Movie> movies = this.watchHistoryRepo.findWatchedMovieByUserId(userId);
-            return movies;
+            return this.watchHistoryRepo.findWatchedMovieByUserId(userId);
         }
         return null;
     }
+
+    //---------------------------------------------------------------------
+    private static final int PAGE_SIZE = 10;
+
+    @Override
+    public Page<Movie> getAllMovies(int pageNo) {
+        Pageable pageable = PageRequest.of(pageNo, PAGE_SIZE, Sort.by(Sort.Direction.ASC, "movieId"));
+        return movieRepo.findAll(pageable);
+    }
+
+    @Override
+    public Page<Movie> searchMoviesByTitle(String title, int pageNo) {
+        Pageable pageable = PageRequest.of(pageNo, PAGE_SIZE, Sort.by(Sort.Direction.ASC, "movieId"));
+        return movieRepo.findByTitleContainingIgnoreCase(title, pageable);
+    }
+
+    @Override
+    public Movie getMovieById(int movieId) {
+        return movieRepo.findById(movieId).orElse(null);
+    }
+
+    @Override
+    public Movie saveMovie(Movie movie) {
+        return movieRepo.save(movie);
+    }
+
+    @Override
+    public Movie updateMovie(int movieId, Movie movieDetails) {
+        Optional<Movie> movie = movieRepo.findById(movieId);
+        if (movie.isEmpty()) {
+            return null;
+        }
+
+        Movie existingMovie = movie.get();
+
+        existingMovie.setTitle(movieDetails.getTitle());
+        existingMovie.setDescription(movieDetails.getDescription());
+        existingMovie.setReleaseYear(movieDetails.getReleaseYear());
+        existingMovie.setPosterUrl(movieDetails.getPosterUrl());
+        existingMovie.setThumbUrl(movieDetails.getThumbUrl());
+        existingMovie.setTrailerUrl(movieDetails.getTrailerUrl());
+        existingMovie.setCountry(movieDetails.getCountry());
+        existingMovie.setLanguage(movieDetails.getLanguage());
+        existingMovie.setMovieStatus(movieDetails.getMovieStatus());
+        existingMovie.setViews(movieDetails.getViews());
+
+        return movieRepo.save(existingMovie);
+    }
+
+    @Override
+    public void deleteMovie(int movieId) {
+        movieActorRepo.deleteByMovieId(movieId);
+        movieDirectorRepo.deleteByMovieId(movieId);
+        movieGenreRepo.deleteByMovieId(movieId);
+        episodeRepo.unlinkEpisodesFromMovie(movieId);
+        commentRepo.deleteByMovieId(movieId);
+
+        movieRepo.deleteById(movieId);
+    }
+
 }

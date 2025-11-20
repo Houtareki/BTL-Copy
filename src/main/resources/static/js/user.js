@@ -2,24 +2,8 @@ let currentMovieId = null;
 const params = new URLSearchParams(window.location.search);
 const userId = params.get("userId");
 
-// Set account link
-const userPageLink = document.getElementById('account-link');
-userPageLink.href = `http://localhost:8080/user/personal?userId=${parseInt(userId)}`;
-
 function goHome() {
     window.location.href = `home?userId=${userId}`;
-}
-
-// Tab switching
-function showTab(tabName) {
-    const tabs = document.querySelectorAll('.tab-content');
-    const buttons = document.querySelectorAll('.tab-btn');
-
-    tabs.forEach(tab => tab.classList.remove('active'));
-    buttons.forEach(btn => btn.classList.remove('active'));
-
-    document.getElementById(tabName).classList.add('active');
-    event.target.closest('.tab-btn').classList.add('active');
 }
 
 // API helper
@@ -31,6 +15,79 @@ async function fetchApi(url, options = {}) {
         console.error('fetchApi error:', err);
         return { status: 'Error', data: { data: [] } };
     }
+}
+
+// Load user info
+async function loadUserInfo() {
+    const json = await fetchApi(`http://localhost:8080/user/get-user-info?userId=${userId}`);
+    if (json.status === "Success" && json.data?.data) {
+        const user = json.data.data;
+        document.getElementById('username').textContent = user.username;
+        document.getElementById('email').textContent = user.email;
+
+        const statusEl = document.getElementById('status');
+        statusEl.textContent = user.state === 'ACTIVE' ? 'Đang hoạt động' : 'Chưa kích hoạt';
+        statusEl.style.color = user.state === 'ACTIVE' ? '#4caf50' : '#ff9800';
+    }
+}
+
+// Change password
+document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const messageEl = document.getElementById('password-message');
+
+    // Validation
+    if (newPassword.length < 6) {
+        messageEl.textContent = 'Mật khẩu mới phải có ít nhất 6 ký tự!';
+        messageEl.className = 'message error';
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        messageEl.textContent = 'Mật khẩu xác nhận không khớp!';
+        messageEl.className = 'message error';
+        return;
+    }
+
+    // Call API
+    const json = await fetchApi(`http://localhost:8080/user/change-password?userId=${userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            currentPassword: currentPassword,
+            password: newPassword,
+            confirmPassword: confirmPassword
+        })
+    });
+
+    if (json.status === "Success") {
+        messageEl.textContent = 'Đổi mật khẩu thành công!';
+        messageEl.className = 'message success';
+        document.getElementById('changePasswordForm').reset();
+
+        setTimeout(() => {
+            messageEl.style.display = 'none';
+        }, 3000);
+    } else {
+        messageEl.textContent = json.message || 'Đổi mật khẩu thất bại!';
+        messageEl.className = 'message error';
+    }
+});
+
+// Tab switching
+function showTab(tabName) {
+    const tabs = document.querySelectorAll('.tab-content');
+    const buttons = document.querySelectorAll('.tab-btn');
+
+    tabs.forEach(tab => tab.classList.remove('active'));
+    buttons.forEach(btn => btn.classList.remove('active'));
+
+    document.getElementById(tabName).classList.add('active');
+    event.target.closest('.tab-btn').classList.add('active');
 }
 
 // Render movies
@@ -64,17 +121,14 @@ function renderMovies(movies, containerId) {
     });
 }
 
-// Load watchlist data
+// Load watchlist
 async function loadWatchlist() {
-    // Load liked movies
     const likedJson = await fetchApi(`http://localhost:8080/user/get-liked-movies-by-userId?userId=${userId}`);
     renderMovies(likedJson.data?.data, 'liked-movies');
 
-    // Load saved movies
     const savedJson = await fetchApi(`http://localhost:8080/user/get-saved-movies-by-userId?userId=${userId}`);
     renderMovies(savedJson.data?.data, 'saved-movies');
 
-    // Load watched movies
     const watchedJson = await fetchApi(`http://localhost:8080/user/get-watched-movies-by-userId?userId=${userId}`);
     renderMovies(watchedJson.data?.data, 'watched-movies');
 }
@@ -86,21 +140,18 @@ async function fetchMovieById(movieId) {
 }
 
 async function fetchEpisodes(movieId) {
-    const json = await fetchApi(`http://localhost:8080/user/get-episodes?movieId=${movieId}`);
-    return json;
+    return await fetchApi(`http://localhost:8080/user/get-episodes?movieId=${movieId}`);
 }
 
 async function fetchComments(movieId) {
-    const json = await fetchApi(`http://localhost:8080/user/get-comments-by-movieId?userId=${userId}&movieId=${movieId}`);
-    return json;
+    return await fetchApi(`http://localhost:8080/user/get-comments-by-movieId?userId=${userId}&movieId=${movieId}`);
 }
 
 async function fetchInteraction(movieId, userId) {
     try {
         const res = await fetch(`http://localhost:8080/user/get-movie-interaction?userId=${userId}&movieId=${movieId}`);
-        if (!res.ok) throw new Error("HTTP error " + res.status);
-
         const result = await res.json();
+
         if (result.status === "Success") {
             const data = result.data.data;
             document.getElementById("like-btn").innerHTML =
@@ -117,19 +168,15 @@ async function fetchInteraction(movieId, userId) {
 
 async function toggleInteraction(movieId, userId, action) {
     try {
-        let interactionUrl = '';
-        if (action === "LIKE") {
-            interactionUrl = `http://localhost:8080/user/interaction-like?userId=${userId}&movieId=${movieId}`;
-        } else if (action === "SAVE") {
-            interactionUrl = `http://localhost:8080/user/interaction-save?userId=${userId}&movieId=${movieId}`;
-        }
+        let url = action === "LIKE"
+            ? `http://localhost:8080/user/interaction-like?userId=${userId}&movieId=${movieId}`
+            : `http://localhost:8080/user/interaction-save?userId=${userId}&movieId=${movieId}`;
 
-        const res = await fetch(interactionUrl, { method: "PUT" });
+        const res = await fetch(url, { method: "PUT" });
         const result = await res.json();
 
         if (result.status === "Success") {
             await fetchInteraction(movieId, userId);
-            // Reload watchlist to reflect changes
             await loadWatchlist();
         }
     } catch (err) {
@@ -153,17 +200,12 @@ function showMovieDetail(movie) {
     fetchInteraction(movie.movieId, userId);
     document.getElementById('movie-detail').style.display = 'block';
 
-    // Load episodes
     fetchEpisodes(movie.movieId).then(episodes => {
         const container = document.getElementById('episode-list');
         container.innerHTML = '';
 
-        if (episodes.status === 'Error' || !episodes.data || episodes.data.data.length === 0) {
-            container.innerHTML = `
-                <div style="color: #666; font-style: italic; text-align: center; margin: 15px 0;">
-                    Lỗi tải tập phim! Vui lòng tải lại trang!
-                </div>
-            `;
+        if (episodes.status === 'Error' || !episodes.data?.data || episodes.data.data.length === 0) {
+            container.innerHTML = '<div style="color: #666; text-align: center;">Lỗi tải tập phim!</div>';
             return;
         }
 
@@ -176,9 +218,9 @@ function showMovieDetail(movie) {
             a.target = "_blank";
             a.textContent = ep.name;
 
-            a.addEventListener('click', async (e) => {
-                await fetchApi(`http://localhost:8080/user/interaction-watch?userId=${parseInt(userId)}&movieId=${currentMovieId}`, { method: 'PUT' });
-                await fetchInteraction(currentMovieId, parseInt(userId));
+            a.addEventListener('click', async () => {
+                await fetchApi(`http://localhost:8080/user/interaction-watch?userId=${userId}&movieId=${currentMovieId}`, { method: 'PUT' });
+                await fetchInteraction(currentMovieId, userId);
             });
 
             div.appendChild(a);
@@ -186,13 +228,12 @@ function showMovieDetail(movie) {
         });
     });
 
-    // Load comments
     fetchComments(movie.movieId).then(comments => {
         const container = document.getElementById('comment-list');
         container.innerHTML = '';
 
-        if (comments.status === "Error" || !comments.data.data || comments.data.data.length === 0) {
-            container.innerHTML = '<p class="no-comment">Chưa có bình luận nào. Hãy là người đầu tiên!</p>';
+        if (comments.status === "Error" || !comments.data?.data || comments.data.data.length === 0) {
+            container.innerHTML = '<p class="no-comment">Chưa có bình luận nào.</p>';
             return;
         }
 
@@ -219,7 +260,7 @@ function closeMovieDetail() {
 
 async function submitComment() {
     if (!currentMovieId || !userId) {
-        alert("Thiếu thông tin userId hoặc movieId!");
+        alert("Thiếu thông tin!");
         return;
     }
 
@@ -229,19 +270,17 @@ async function submitComment() {
         return;
     }
 
-    const body = {
-        userId: parseInt(userId, 10),
-        movieId: currentMovieId,
-        content: content
-    };
-
     const json = await fetchApi(`http://localhost:8080/user/add-comment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify({
+            userId: parseInt(userId),
+            movieId: currentMovieId,
+            content: content
+        })
     });
 
-    if (json.status && json.status.toLowerCase() === 'success') {
+    if (json.status?.toLowerCase() === 'success') {
         document.getElementById('comment-input').value = '';
         showMovieDetail(await fetchMovieById(currentMovieId));
     } else {
@@ -251,21 +290,14 @@ async function submitComment() {
 
 // Event listeners
 document.addEventListener("DOMContentLoaded", () => {
-    const likeBtn = document.getElementById("like-btn");
-    const saveBtn = document.getElementById("save-btn");
+    document.getElementById("like-btn")?.addEventListener("click", () => {
+        if (currentMovieId) toggleInteraction(currentMovieId, userId, "LIKE");
+    });
 
-    if (likeBtn) {
-        likeBtn.addEventListener("click", () => {
-            if (currentMovieId) toggleInteraction(currentMovieId, userId, "LIKE");
-        });
-    }
+    document.getElementById("save-btn")?.addEventListener("click", () => {
+        if (currentMovieId) toggleInteraction(currentMovieId, userId, "SAVE");
+    });
 
-    if (saveBtn) {
-        saveBtn.addEventListener("click", () => {
-            if (currentMovieId) toggleInteraction(currentMovieId, userId, "SAVE");
-        });
-    }
-
-    // Load initial data
+    loadUserInfo();
     loadWatchlist();
 });

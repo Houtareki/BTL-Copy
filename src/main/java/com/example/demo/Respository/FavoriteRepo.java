@@ -20,23 +20,23 @@ public interface FavoriteRepo extends JpaRepository<UserFavoritedMovie,FavoriteI
 
     @Transactional
     @Query(value = "select m.* from favorites f left join movies m on f.movie_id = m.movie_id where f.user_id = :userId", nativeQuery = true)
-    public List<Movie> findAllFavoriedMovieByUerId(@Param("userId") int userId);
+    List<Movie> findAllFavoriedMovieByUerId(@Param("userId") int userId);
 
     @Transactional
     @Query(value = "select count(movie_id) from favorites f left join users u on f.user_id = u.user_id where u.user_id = :userId and movie_id = :movieId", nativeQuery = true)
-    public int isMovieFavoritedByUser(@Param(value = "userId") int userId, @Param(value = "movieId") int movieId);
+    int isMovieFavoritedByUser(@Param(value = "userId") int userId, @Param(value = "movieId") int movieId);
 
     @Transactional
     @Query(value = "select count(*) from favorites f left join movies m on f.movie_id = m.movie_id where f.movie_id = :movieId", nativeQuery = true)
-    public int findTotalLikesByMovieId(@Param(value = "movieId") int movieId);
+    int findTotalLikesByMovieId(@Param(value = "movieId") int movieId);
 
     @Transactional
     @Modifying
     @Query(value = "insert into favorites (user_id, movie_id, added_at) values (:userId,:movieId,:addedAt)", nativeQuery = true)
-    public int addToRepo(@Param(value = "userId") int userId, @Param(value = "movieId") int movieId, @Param(value = "addedAt") LocalDateTime addedAt);
+    void addToRepo(@Param(value = "userId") int userId, @Param(value = "movieId") int movieId, @Param(value = "addedAt") LocalDateTime addedAt);
 
     @Transactional
     @Modifying
     @Query(value = "delete from favorites where user_id=:userId and movie_id = :movieId", nativeQuery = true)
-    public int removeFromRepo(@Param(value = "userId") int userId, @Param(value = "movieId") int movieId);
+    void removeFromRepo(@Param(value = "userId") int userId, @Param(value = "movieId") int movieId);
 }
