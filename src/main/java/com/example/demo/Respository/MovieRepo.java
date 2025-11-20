@@ -99,4 +99,7 @@ public interface MovieRepo extends JpaRepository<Movie, Integer>, JpaSpecificati
     @Query("SELECT m FROM Movie m ORDER BY m.views DESC")
     Page<Movie> findTopViewedMovies(Pageable pageable);
 
+    @Query(value = "SELECT COLLATE(SUM(views), 0) FROM movies", nativeQuery = true)
+    Long sumTotalViews();
+
 }

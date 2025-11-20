@@ -1,6 +1,9 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Model.CommonModel.UserForm;
+import com.example.demo.Respository.CommentRepo;
+import com.example.demo.Respository.MovieRepo;
+import com.example.demo.Respository.UserRepo;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,6 +17,9 @@ import com.example.demo.Model.ResponseModel.CustomData;
 import com.example.demo.Model.ResponseModel.CustomResponse;
 import com.example.demo.Service.UserService;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Controller
 @RequestMapping("/admin")
 @CrossOrigin(origins = "*")
@@ -21,6 +27,15 @@ public class AdminController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private CommentRepo commentRepo;
+
+    @Autowired
+    private MovieRepo movieRepo;
+
+    @Autowired
+    private UserRepo userRepo;
 
     @GetMapping("/dashboard")
     public String getAdminDashboardPage() {
@@ -154,5 +169,25 @@ public class AdminController {
         }
 
         return ResponseEntity.ok(new CustomResponse<>("Success", "Xóa thành công", null));
+    }
+
+    @GetMapping("/stats")
+    @ResponseBody
+    public ResponseEntity<?> getDashboardStats(@RequestParam(name = "userId") int userId){
+        if (isNotAdmin(userId)){
+            return unauthorized();
+        }
+
+        try {
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalUsers", userRepo.count());
+            stats.put("totalMovies", movieRepo.count());
+            stats.put("totalComments", commentRepo.count());
+            stats.put("totalViews", movieRepo.sumTotalViews());
+            return ResponseEntity.ok(new CustomResponse<>("Success", null, new CustomData<>(stats)));
+        }
+        catch (Exception e){
+            return ResponseEntity.ok(new CustomResponse<>("Error", "Lỗi", null));
+        }
     }
 }

@@ -24,6 +24,9 @@
 <aside class="w-64 bg-gray-800 p-4">
     <h1 class="text-2xl font-bold text-rose-500 text-center mb-4">Admin Management</h1>
     <nav class="space-y-1">
+        <button class="w-full text-left px-3 py-2 rounded hover:bg-red-700" data-tab="dashboard">
+            <i class="fa-solid fa-chart-line mr-2"></i>Dashboard
+        </button>
         <button class="w-full text-left px-3 py-2 rounded hover:bg-red-700" data-tab="movies">Movies</button>
         <button class="w-full text-left px-3 py-2 rounded hover:bg-red-700" data-tab="genres">Genres</button>
         <button class="w-full text-left px-3 py-2 rounded hover:bg-red-700" data-tab="actors">Actors</button>
@@ -205,6 +208,8 @@
 
 
     function performSearch(tab, keyword, payload = '') {
+        if (tab === 'dashboard') return;
+
         let loader;
         if (tab === 'movies') {
             loader = loadMovies(0, keyword, payload);
@@ -222,7 +227,6 @@
         }
 
         loader && loader();
-        return;
     }
 
 
@@ -232,6 +236,7 @@
         // Đặt tab hiện tại & tiêu đề
         currentTab = tab;
         pageTitle.innerText = {
+            dashboard: 'Dashboard',
             movies: 'Movies',
             genres: 'Genres',
             actors: 'Actors',
@@ -307,6 +312,7 @@
 
         // 8Load dữ liệu ban đầu
         const loader = {
+            dashboard: loadDashboard,
             movies: loadMovies,
             genres: loadGenres,
             actors: loadActors,
@@ -1881,7 +1887,7 @@
 
     // initial load
     //openMovieDetailModal(1)
-    loadPage('movies');
+    loadPage('dashboard');
 
 
     // ---------- HOT MOVIES: load hot films ----------
@@ -1994,28 +2000,28 @@
     async function loadPage(tab) {
         currentTab = tab;
         pageTitle.innerText = {
+            dashboard: 'Dashboard',
             movies: 'Movies',
             genres: 'Genres',
             actors: 'Actors',
             directors: 'Directors',
             episodes: 'Episodes',
             users: 'Users',
-            'hot-movies': 'Hot Films',
-            comments: 'Comments'
+            comments: 'Comments',
+            'hot-movies': 'Hot Films'
         }[tab] || tab;
 
         headerActions.innerHTML = '';
         headerActions.className = 'flex flex-col justify-between items-center w-full px-4';
 
-        const topHeaderActions = document.createElement('div')
+        const topHeaderActions = document.createElement('div');
         topHeaderActions.className = 'flex flex-row items-center justify-between flex-1 w-full';
         const centerContainer = document.createElement('div');
         centerContainer.className = 'flex justify-center flex-1';
         headerActions.appendChild(topHeaderActions);
 
-        // Không hiển thị search và add button cho hot-movies
-        if (tab !== 'hot-movies') {
-            // Ô search
+        // [SỬA] Không hiển thị search và nút Add cho 'hot-movies' VÀ 'dashboard'
+        if (tab !== 'hot-movies' && tab !== 'dashboard') {
             const searchInput = document.createElement('input');
             searchInput.type = 'text';
             searchInput.placeholder = 'Search...';
@@ -2024,7 +2030,6 @@
                 placeholder-gray-400 focus:outline-none
                 focus:ring-2 focus:ring-blue-400 w-80
             `;
-
             let searchTimer;
             searchInput.addEventListener('input', (e) => {
                 clearTimeout(searchTimer);
@@ -2033,10 +2038,8 @@
                     performSearch(currentTab, keyword);
                 }, 500);
             });
-
             centerContainer.appendChild(searchInput);
 
-            // Nút "+ Add" ở bên phải
             const addBtn = document.createElement('button');
             addBtn.className = `
                 px-4 py-2 bg-green-600 hover:bg-green-700
@@ -2058,12 +2061,12 @@
             topHeaderActions.appendChild(addBtn);
         }
 
-        // Gắn tất cả vào headerActions
+        // Gắn tiêu đề vào lại header
         topHeaderActions.insertBefore(pageTitle, topHeaderActions.firstChild);
         topHeaderActions.appendChild(centerContainer);
 
-        // Load dữ liệu ban đầu
         const loader = {
+            dashboard: loadDashboard, // Đảm bảo có dashboard ở đây
             movies: loadMovies,
             genres: loadGenres,
             actors: loadActors,
@@ -2074,6 +2077,72 @@
             comments: loadComments
         }[tab];
         loader && loader(tabState[tab]?.page || 0);
+    }
+
+    // ---------- DASHBOARD ----------
+    async function loadDashboard() {
+        currentTab = 'dashboard';
+        // [SỬA] Không xóa headerActions.innerHTML = '' nữa vì loadPage đã lo việc hiển thị đúng rồi.
+        contentArea.innerHTML = '<div class="text-gray-400 p-4">Đang tải dữ liệu thống kê...</div>';
+
+        try {
+            const res = await fetchApi(`/stats?userId=${userId}`);
+            if (res.status === 'Success') {
+                const data = res.data.data;
+                contentArea.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-rose-500 flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-400 text-sm uppercase font-bold">Total Movies</p>
+                            <h3 class="text-3xl font-bold text-white mt-1">${data.totalMovies}</h3>
+                        </div>
+                        <div class="p-3 bg-rose-500 bg-opacity-20 rounded-full">
+                            <i class="fa-solid fa-film text-2xl text-rose-500"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-purple-500 flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-400 text-sm uppercase font-bold">Total Views</p>
+                            <h3 class="text-3xl font-bold text-white mt-1">${data.totalViews.toLocaleString()}</h3>
+                        </div>
+                        <div class="p-3 bg-purple-500 bg-opacity-20 rounded-full">
+                            <i class="fa-solid fa-eye text-2xl text-purple-500"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-blue-500 flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-400 text-sm uppercase font-bold">Total Users</p>
+                            <h3 class="text-3xl font-bold text-white mt-1">${data.totalUsers}</h3>
+                        </div>
+                        <div class="p-3 bg-blue-500 bg-opacity-20 rounded-full">
+                            <i class="fa-solid fa-users text-2xl text-blue-500"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-yellow-500 flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-400 text-sm uppercase font-bold">Comments</p>
+                            <h3 class="text-3xl font-bold text-white mt-1">${data.totalComments}</h3>
+                        </div>
+                        <div class="p-3 bg-yellow-500 bg-opacity-20 rounded-full">
+                            <i class="fa-solid fa-comments text-2xl text-yellow-500"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-800 rounded-lg p-8 text-center border border-gray-700">
+                    <h2 class="text-2xl font-bold text-white mb-2">Chào mừng trở lại, Admin! 👋</h2>
+                    <p class="text-gray-400">Hệ thống đang hoạt động ổn định. Hãy chọn một mục bên trái để quản lý.</p>
+                </div>
+            `;
+            } else {
+                contentArea.innerHTML = `<div class="text-red-400 p-4">Lỗi tải thống kê: ${res.message}</div>`;
+            }
+        } catch (err) {
+            contentArea.innerHTML = `<div class="text-red-400 p-4">Lỗi kết nối: ${err.message}</div>`;
+        }
     }
 
     // Expose function
