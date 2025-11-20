@@ -2,8 +2,7 @@ package com.example.demo.Controller;
 
 import com.example.demo.Entity.*;
 import com.example.demo.Model.CommonModel.EpisodeAndMovieTitle;
-import com.example.demo.Respository.CommentRepo;
-import com.example.demo.Respository.MovieRepo;
+import com.example.demo.Respository.*;
 import com.example.demo.Service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,10 +15,7 @@ import com.example.demo.Model.ResponseModel.CustomData;
 import com.example.demo.Model.ResponseModel.CustomResponse;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/admin")
@@ -33,6 +29,15 @@ public class AdminMovieController {
     private UserService userService;
     @Autowired
     private MovieRepo movieRepo;
+
+    @Autowired
+    private MovieActorRepo movieActorRepo;
+    @Autowired
+    private MovieDirectorRepo movieDirectorRepo;
+    @Autowired
+    private EpisodeRepo episodeRepo;
+    @Autowired
+    private CommentRepo commentRepo;
 
 /* Code này bỏ
     @GetMapping
@@ -148,9 +153,9 @@ public class AdminMovieController {
         return ResponseEntity.ok(new CustomResponse<>("Success", null, new CustomData<>(moviePage)));
     }
 
-    @GetMapping("/get/movies")
+    @GetMapping("/get/movie")
     @ResponseBody
-    public ResponseEntity<?> getMoviesDetails(
+    public ResponseEntity<?> getMovieDetailForModal(
             @RequestParam("userId") int userId,
             @RequestParam("movieId") int movieId) {
 
@@ -163,7 +168,15 @@ public class AdminMovieController {
         if (movie == null) {
             return ResponseEntity.ok(new CustomResponse<>("Error", "Không tìm thấy phim", null));
         }
-        return ResponseEntity.ok(new CustomResponse<>("Success", null, new CustomData<>(movie)));
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("movie", movie);
+        map.put("actors", movieActorRepo.findActorsByMovieId(movieId));
+        map.put("directors", movieDirectorRepo.findDirectorsByMovieId(movieId));
+        map.put("episodes", episodeRepo.findByMovieId(movieId));
+        map.put("comments", commentRepo.getAllCommentsByMovieId(movieId));
+
+        return ResponseEntity.ok(new CustomResponse<>("Success", null, new CustomData<>(map)));
     }
 
     @PutMapping("/update/movie")
@@ -193,6 +206,150 @@ public class AdminMovieController {
 
         movieService.deleteMovie(movieId);
         return ResponseEntity.ok(new CustomResponse<>("Success", "Xóa phim thành công", null));
+    }
+
+    @PostMapping("/add/actors")
+    @ResponseBody
+    public ResponseEntity<?> addActors(
+            @RequestParam("userId") int userId,
+            @RequestParam("movieId") int movieId,
+            @RequestBody List<Integer> actorIds){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        try {
+            List<MovieActor> list = new ArrayList<>();
+            for (Integer actorId : actorIds) {
+                list.add(new MovieActor(movieId, actorId));
+            }
+            movieActorRepo.saveAll(list);
+            return ResponseEntity.ok(new CustomResponse<>("Success", "Đã thêm diễn viên vào phim", null));
+        }
+        catch (Exception e) {
+            return ResponseEntity.ok(new CustomResponse<>("Success", "Thêm diễn viên thất bại", null));
+        }
+    }
+
+    @DeleteMapping("/delete/actors-from-movie")
+    @ResponseBody
+    public ResponseEntity<?> deleteActors(
+            @RequestParam("userId") int userId,
+            @RequestParam("movieId") int movieId,
+            @RequestBody List<Integer> actorIds){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        try {
+            List<MovieActor> list = new ArrayList<>();
+            for (Integer actorId : actorIds) {
+                list.add(new MovieActor(movieId, actorId));
+            }
+            movieActorRepo.deleteAll(list);
+            return ResponseEntity.ok(new CustomResponse<>("Success", "Đã xóa diễn viên khỏi phim", null));
+        }
+        catch (Exception e) {
+            return ResponseEntity.ok(new CustomResponse<>("Success", "Xóa diễn viên thất bại", null));
+        }
+    }
+
+    @DeleteMapping("/delete/directors-from-movie")
+    @ResponseBody
+    public ResponseEntity<?> deleteDirectors(
+            @RequestParam("userId") int userId,
+            @RequestParam("movieId") int movieId,
+            @RequestBody List<Integer> directorIds){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        try {
+            List<MovieActor> list = new ArrayList<>();
+            for (Integer directorId : directorIds) {
+                list.add(new MovieActor(movieId, directorId));
+            }
+            movieActorRepo.deleteAll(list);
+            return ResponseEntity.ok(new CustomResponse<>("Success", "Đã xóa đạo diễn khỏi phim", null));
+        }
+        catch (Exception e) {
+            return ResponseEntity.ok(new CustomResponse<>("Success", "Xóa đạo diễn thất bại", null));
+        }
+    }
+
+    @PostMapping("/add/directors")
+    @ResponseBody
+    public ResponseEntity<?> addDirectors(
+            @RequestParam("userId") int userId,
+            @RequestParam("movieId") int movieId,
+            @RequestBody List<Integer> directorIds){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        try {
+            List<MovieActor> list = new ArrayList<>();
+            for (Integer actorId : directorIds) {
+                list.add(new MovieActor(movieId, actorId));
+            }
+            movieActorRepo.saveAll(list);
+            return ResponseEntity.ok(new CustomResponse<>("Success", "Đã thêm diễn viên vào phim", null));
+        }
+        catch (Exception e) {
+            return ResponseEntity.ok(new CustomResponse<>("Success", "Thêm diễn viên thất bại", null));
+        }
+    }
+
+    @PostMapping("/add/episodes")
+    @ResponseBody
+    public ResponseEntity<?> addEpisodes(
+            @RequestParam("userId") int userId,
+            @RequestParam("movieId") int movieId,
+            @RequestBody List<Integer> episodeIds){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        try {
+            List<Episode> episodes = episodeRepo.findAllById(episodeIds);
+            for(Episode episode : episodes){
+                episode.setMovieId(movieId);
+            }
+            episodeRepo.saveAll(episodes);
+            return ResponseEntity.ok(new CustomResponse<>("Success", "Đã thêm tập phim", null));
+        }
+        catch (Exception e) {
+            return ResponseEntity.ok(new CustomResponse<>("Success", "Thêm tập phim thất bại", null));
+        }
+    }
+
+    @DeleteMapping("/delete/episodes-from-movie")
+    @ResponseBody
+    public ResponseEntity<?> deleteEpisodes(
+            @RequestParam("userId") int userId,
+            @RequestParam("movieId") int movieId,
+            @RequestBody List<Integer> episodeIds){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        try {
+            List<Episode> episodes = episodeRepo.findAllById(episodeIds);
+            for(Episode episode : episodes){
+                episode.setMovieId(-1);
+            }
+            episodeRepo.saveAll(episodes);
+            return ResponseEntity.ok(new CustomResponse<>("Success", "Đã gỡ tập phim", null));
+        }
+        catch (Exception e) {
+            return ResponseEntity.ok(new CustomResponse<>("Success", "Gỡ tập phim thât bại", null));
+        }
     }
 
     //-------------------------------Genre-----------------------------------
@@ -577,7 +734,7 @@ public class AdminMovieController {
     @ResponseBody
     public ResponseEntity<?> getUnlinkedEpisodes(
             @RequestParam(name = "userId") int userId,
-            @RequestParam(name = "pageNo") int pageNo){
+            @RequestParam(name = "pageNo", defaultValue = "0") int pageNo){
 
         if (isNotAdmin(userId)) {
             return unauthorized();
@@ -670,8 +827,6 @@ public class AdminMovieController {
     }
 
     //--------------------------Comment----------------------
-    @Autowired
-    private CommentRepo commentRepo;
 
     @GetMapping("/comments")
     @ResponseBody
@@ -705,5 +860,24 @@ public class AdminMovieController {
             return ResponseEntity.ok(new CustomResponse<>("Success", "Đã xóa comment", null));
         }
         return ResponseEntity.ok(new CustomResponse<>("Error", "Comment không tồn tại", null));
+    }
+
+    @DeleteMapping("/delete/comments")
+    @ResponseBody
+    public ResponseEntity<?> deleteComments(
+            @RequestParam("userId") int userId,
+            @RequestBody List<Integer> commentIds){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        try {
+            commentRepo.deleteAllById(commentIds);
+            return ResponseEntity.ok(new CustomResponse<>("Success", "Đã xóa các comments đã chọn", null));
+        }
+        catch (Exception e) {
+            return ResponseEntity.ok(new CustomResponse<>("Success", "Xóa các comments thất bại", null));
+        }
     }
 }
