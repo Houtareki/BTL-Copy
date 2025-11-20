@@ -2,11 +2,13 @@ package com.example.demo.Controller;
 
 import com.example.demo.Entity.*;
 import com.example.demo.Model.CommonModel.EpisodeAndMovieTitle;
+import com.example.demo.Respository.CommentRepo;
 import com.example.demo.Respository.MovieRepo;
 import com.example.demo.Service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +34,7 @@ public class AdminMovieController {
     @Autowired
     private MovieRepo movieRepo;
 
+/* Code này bỏ
     @GetMapping
     public ResponseEntity<?> getAllMovies() {
         try {
@@ -97,7 +100,7 @@ public class AdminMovieController {
             );
         }
     }
-
+*/
     //---------------------------------------------------------------------
 
     private boolean isNotAdmin(int userId) {
@@ -381,7 +384,7 @@ public class AdminMovieController {
         return ResponseEntity.ok(new CustomResponse<>("Success", null, null));
     }
 
-    @PutMapping("/update/dỉrector")
+    @PutMapping("/update/director")
     @ResponseBody
     public ResponseEntity<?> updateDirector(
             @RequestParam(name = "userId") int userId,
@@ -664,5 +667,43 @@ public class AdminMovieController {
         } catch (Exception e) {
             return ResponseEntity.ok(new CustomResponse<>("Error", "Lỗi: " + e.getMessage(), null));
         }
+    }
+
+    //--------------------------Comment----------------------
+    @Autowired
+    private CommentRepo commentRepo;
+
+    @GetMapping("/comments")
+    @ResponseBody
+    public ResponseEntity<?> getComments(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "pageNo", defaultValue = "0") int pageNo){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        Pageable pageable = PageRequest.of(pageNo, 10);
+        Page<Comment> page = commentRepo.findAll(pageable);
+        CustomData<Page<Comment>> data = new CustomData<>(page);
+
+        return ResponseEntity.ok(new CustomResponse<>("Success", null, data));
+    }
+
+    @DeleteMapping("/delete/comment")
+    @ResponseBody
+    public ResponseEntity<?> deleteComment(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "commentId") int commentId){
+
+        if (isNotAdmin(userId)) {
+            return unauthorized();
+        }
+
+        if (commentRepo.existsById(commentId)) {
+            commentRepo.deleteById(commentId);
+            return ResponseEntity.ok(new CustomResponse<>("Success", "Đã xóa comment", null));
+        }
+        return ResponseEntity.ok(new CustomResponse<>("Error", "Comment không tồn tại", null));
     }
 }
